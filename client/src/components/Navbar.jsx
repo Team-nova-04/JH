@@ -30,6 +30,11 @@ const Navbar = () => {
     return "/";
   };
 
+  const getCommunityLink = () => {
+    if (userType === "admin") return "/admin/communities";
+    return "/communities";
+  };
+
   return (
     <nav className="sticky top-0 z-50 border-b shadow-2xl bg-gradient-to-r from-[#8D153A]/90 via-[#EB7400]/80 to-[#00534E]/90 backdrop-blur-2xl border-white/30">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -123,8 +128,10 @@ const Navbar = () => {
                 </Link>
 
                 <Link
-                  to="/communities"
-                  className="relative flex items-center px-5 py-3 space-x-2 overflow-hidden font-semibold text-white transition-all duration-500 group rounded-xl hover:shadow-2xl"
+                  to={
+                    userType === "admin" ? "/admin/communities" : "/communities"
+                  }
+                  className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-blue-50 font-medium flex items-center space-x-1"
                 >
                   <div className="absolute inset-0 transition-all duration-500 border bg-white/10 backdrop-blur-md border-white/20 rounded-xl group-hover:bg-white/20 group-hover:backdrop-blur-lg group-hover:border-white/30"></div>
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent -skew-x-12 transform translate-x-[-100%] group-hover:translate-x-[100%] transition-all duration-1000"></div>
@@ -249,8 +256,10 @@ const Navbar = () => {
                 </Link>
 
                 <Link
-                  to="/communities"
-                  className="relative flex items-center block px-5 py-4 space-x-2 overflow-hidden font-semibold text-white transition-all duration-500 group rounded-xl hover:shadow-2xl"
+                  to={
+                    userType === "admin" ? "/admin/communities" : "/communities"
+                  }
+                  className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <div className="absolute inset-0 transition-all duration-500 border bg-white/10 backdrop-blur-md border-white/20 rounded-xl group-hover:bg-white/20 group-hover:backdrop-blur-lg group-hover:border-white/30"></div>
