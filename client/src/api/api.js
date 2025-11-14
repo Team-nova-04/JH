@@ -43,9 +43,7 @@ export const adminAPI = {
   uploadCSV: (file) => {
     const formData = new FormData();
     formData.append("csv", file);
-    return axiosClient.post("/admin/upload-csv", formData, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    return axiosClient.post("/admin/upload-csv", formData);
   },
 };
 

@@ -1,8 +1,9 @@
 const Complaint = require("../models/Complaint");
-const { processNLP } = require("../services/nlpService");
+const { processNLP, validateUrgencyWithAI } = require("../services/nlpService");
 const {
   processUrgency,
   calculateUrgencyScore,
+  getUrgencyLevel,
 } = require("../services/urgencyService");
 const { assignAuthority } = require("../services/authorityService");
 const {
@@ -26,9 +27,23 @@ const {
  */
 const submitComplaint = async (req, res) => {
   try {
-    const { description, location, category } = req.body;
+    let { description, location, category } = req.body;
     const imageUrl = req.file ? `/uploads/images/${req.file.filename}` : null;
     const citizen = req.user || null;
+
+    // Ensure description is a string (not an object)
+    if (typeof description !== "string") {
+      if (description && typeof description === "object") {
+        // If it's an object, try to extract a string value or convert to string
+        description = description.toString();
+      } else {
+        description = String(description || "");
+      }
+    }
+
+    // Trim and validate
+    description = description.trim();
+    location = location ? String(location).trim() : null;
 
     // Validation
     if (!description || !location) {
@@ -40,6 +55,23 @@ const submitComplaint = async (req, res) => {
 
     // Process NLP to get the category if not provided
     const nlpResults = await processNLP(description);
+
+    // Check if AI failed to detect category
+    if (nlpResults.error || !nlpResults.category) {
+      // If user provided category manually, use it
+      if (category) {
+        console.log("Using manually selected category:", category);
+      } else {
+        return res.status(400).json({
+          success: false,
+          message:
+            nlpResults.message ||
+            "Could not determine category. Please re-enter your problem with more details or select a category manually.",
+          requiresCategorySelection: true,
+        });
+      }
+    }
+
     const finalCategory = category || nlpResults.category;
 
     // Check if the category requires identification and if the user is anonymous
@@ -72,42 +104,99 @@ const submitComplaint = async (req, res) => {
     // Determine if anonymous
     const isAnonymous = !citizen;
 
-    // Process urgency
+    // Get urgency data for storing (hazardKeywordScore, trustScore)
     const urgencyData = processUrgency(description, isAnonymous);
-    const urgencyScore = calculateUrgencyScore({
+
+    // HYBRID APPROACH: Calculate urgency using our logic first (fast, reliable)
+    let urgencyScore = calculateUrgencyScore({
       sentimentScore: nlpResults.sentimentScore,
       categoryConfidence: nlpResults.categoryConfidence,
       hazardKeywordScore: urgencyData.hazardKeywordScore,
       trustScore: urgencyData.trustScore,
     });
+    let urgencyLevel = getUrgencyLevel(urgencyScore);
+
+    // Optional: Validate with AI if calculated urgency is borderline or AI suggests higher urgency
+    // This helps catch edge cases where keywords might miss nuanced urgency
+    try {
+      const aiUrgencyValidation = await validateUrgencyWithAI(description);
+
+      if (aiUrgencyValidation && aiUrgencyValidation.confidence >= 0.7) {
+        const aiLevel = aiUrgencyValidation.urgencyLevel;
+        const calculatedLevel = urgencyLevel;
+
+        // If AI detects critical/urgent and our logic says normal, boost it
+        if (
+          (aiLevel === "critical" || aiLevel === "urgent") &&
+          calculatedLevel === "normal"
+        ) {
+          console.log(
+            `AI validation: Boosting urgency from ${calculatedLevel} to ${aiLevel}`
+          );
+          urgencyLevel = aiLevel;
+          // Boost score based on AI confidence
+          if (aiLevel === "critical") {
+            urgencyScore = Math.min(urgencyScore + 0.3, 1.0);
+          } else if (aiLevel === "urgent") {
+            urgencyScore = Math.min(urgencyScore + 0.2, 0.89);
+          }
+        }
+        // If both agree on high urgency, slightly boost confidence
+        else if (
+          (aiLevel === "critical" || aiLevel === "urgent") &&
+          (calculatedLevel === "critical" || calculatedLevel === "urgent")
+        ) {
+          urgencyScore = Math.min(urgencyScore + 0.05, 1.0);
+          console.log(
+            `AI validation: Confirmed ${urgencyLevel} urgency, boosted score`
+          );
+        }
+      }
+    } catch (error) {
+      // AI validation failed - use calculated urgency (not critical)
+      console.log("AI urgency validation skipped, using calculated urgency");
+    }
+
+    console.log(
+      `Final urgency: ${urgencyLevel} (score: ${urgencyScore.toFixed(2)})`
+    );
 
     // Assign authority (use provided category or NLP result)
     const assignedAuthority = assignAuthority(finalCategory);
 
-    // Generate summary and key phrases
-    const summary = generateSummary(description);
+    // Generate summary and key phrases (ensure they are strings)
+    const summary = String(generateSummary(description) || "").trim();
     const keyPhrases = extractKeyPhrases(description);
 
-    // Create complaint
+    // Ensure keyPhrases is an array of strings
+    const validKeyPhrases = Array.isArray(keyPhrases)
+      ? keyPhrases
+          .map((phrase) => String(phrase || "").trim())
+          .filter((phrase) => phrase.length > 0)
+      : [];
+
+    // Create complaint - ensure all string fields are properly formatted
     const complaint = await Complaint.create({
       citizenId: citizen ? citizen._id : null,
       anonymous: isAnonymous,
-      name: citizen ? citizen.name : null,
-      phone: citizen ? citizen.phone : null,
-      email: citizen ? citizen.email : null,
-      description,
-      location,
-      imageUrl,
-      category: finalCategory,
-      sentiment: nlpResults.sentiment,
-      sentimentScore: nlpResults.sentimentScore,
-      categoryConfidence: nlpResults.categoryConfidence,
-      summary,
-      keyPhrases,
-      hazardKeywordScore: urgencyData.hazardKeywordScore,
-      urgencyScore,
-      trustScore: urgencyData.trustScore,
-      assignedAuthority,
+      name: citizen ? String(citizen.name || "").trim() : null,
+      phone: citizen ? String(citizen.phone || "").trim() : null,
+      email: citizen ? String(citizen.email || "").trim() : null,
+      description: String(description).trim(), // Ensure it's a string
+      location: String(location).trim(), // Ensure it's a string
+      imageUrl: imageUrl ? String(imageUrl).trim() : null,
+      category: finalCategory ? String(finalCategory).trim() : null,
+      sentiment: nlpResults.sentiment
+        ? String(nlpResults.sentiment)
+        : "neutral",
+      sentimentScore: Number(nlpResults.sentimentScore) || 0.5,
+      categoryConfidence: Number(nlpResults.categoryConfidence) || 0,
+      summary: summary || "", // Ensure it's a string, not null
+      keyPhrases: validKeyPhrases, // Use validated array
+      hazardKeywordScore: Number(urgencyData.hazardKeywordScore) || 0,
+      urgencyScore: Number(urgencyScore) || 0.5,
+      trustScore: Number(urgencyData.trustScore) || 0.5,
+      assignedAuthority: String(assignedAuthority).trim(),
       status: "pending",
       notes: [],
     });
