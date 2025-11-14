@@ -30,6 +30,11 @@ const Navbar = () => {
     return "/";
   };
 
+  const getCommunityLink = () => {
+    if (userType === "admin") return "/admin/communities";
+    return "/communities";
+  };
+
   return (
     <nav className="sticky top-0 z-50 border-b shadow-2xl bg-gradient-to-r from-[#8D153A]/90 via-[#EB7400]/80 to-[#00534E]/90 backdrop-blur-2xl border-white/30">
       <div className="px-4 mx-auto max-w-7xl sm:px-6 lg:px-8">
@@ -103,7 +108,9 @@ const Navbar = () => {
                   <span>Dashboard</span>
                 </Link>
                 <Link
-                  to="/communities"
+                  to={
+                    userType === "admin" ? "/admin/communities" : "/communities"
+                  }
                   className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-blue-50 font-medium flex items-center space-x-1"
                 >
                   <Users className="h-4 w-4" />
@@ -213,7 +220,9 @@ const Navbar = () => {
                   <span>Dashboard</span>
                 </Link>
                 <Link
-                  to="/communities"
+                  to={
+                    userType === "admin" ? "/admin/communities" : "/communities"
+                  }
                   className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >

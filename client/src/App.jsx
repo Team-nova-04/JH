@@ -4,6 +4,7 @@ import {
   Routes,
   Route,
   Navigate,
+  useLocation,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import { CommunityProvider } from "./context/CommunityContext";
@@ -47,9 +48,30 @@ import AdminAllComplaints from "./pages/admin/AdminAllComplaints";
 import AdminManageAuthorities from "./pages/admin/AdminManageAuthorities";
 import AdminUploadCSV from "./pages/admin/AdminUploadCSV";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminCommunityDashboard from "./pages/admin/AdminCommunityDashboard";
+import AdminCommunityManagement from "./pages/admin/AdminCommunityManagement";
 
 // Citizen Pages
 import CitizenComplaintDetail from "./pages/citizen/CitizenComplaintDetail";
+
+// Layout wrapper component to conditionally show Navbar/Footer
+function AppLayout({ children }) {
+  const location = useLocation();
+
+  // Hide navbar and footer for dashboard routes
+  const isDashboardRoute =
+    location.pathname.startsWith("/admin/") ||
+    location.pathname.startsWith("/authority/");
+
+  return (
+    <>
+      {!isDashboardRoute && <Navbar />}
+      <main className="flex-grow">{children}</main>
+      {!isDashboardRoute && <Footer />}
+      <Toast />
+    </>
+  );
+}
 
 function App() {
   useEffect(() => {
@@ -66,8 +88,7 @@ function App() {
       <CommunityProvider>
         <Router>
           <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-            <Navbar />
-            <main className="flex-grow">
+            <AppLayout>
               <Routes>
                 {/* Public Routes */}
                 <Route path="/" element={<LandingPage />} />
@@ -162,6 +183,14 @@ function App() {
                             path="analytics"
                             element={<AdminAnalytics />}
                           />
+                          <Route
+                            path="communities"
+                            element={<AdminCommunityDashboard />}
+                          />
+                          <Route
+                            path="communities/:id/manage"
+                            element={<AdminCommunityManagement />}
+                          />
                         </Routes>
                       </DashboardLayout>
                     </ProtectedRoute>
@@ -171,9 +200,7 @@ function App() {
                 {/* Fallback */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
-            </main>
-            <Footer />
-            <Toast />
+            </AppLayout>
           </div>
         </Router>
       </CommunityProvider>

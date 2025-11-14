@@ -1,5 +1,5 @@
-import { Link, useLocation } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { Link, useLocation } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 import {
   LayoutDashboard,
   FileText,
@@ -10,8 +10,8 @@ import {
   LogOut,
   Menu,
   X,
-} from 'lucide-react';
-import { useState } from 'react';
+} from "lucide-react";
+import { useState } from "react";
 
 const DashboardLayout = ({ children }) => {
   const { userType, user, logout } = useAuth();
@@ -19,19 +19,24 @@ const DashboardLayout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const getMenuItems = () => {
-    if (userType === 'authority') {
+    if (userType === "authority") {
       return [
-        { path: '/authority/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/authority/complaints', label: 'Complaints', icon: FileText },
+        {
+          path: "/authority/dashboard",
+          label: "Dashboard",
+          icon: LayoutDashboard,
+        },
+        { path: "/authority/complaints", label: "Complaints", icon: FileText },
       ];
     }
-    if (userType === 'admin') {
+    if (userType === "admin") {
       return [
-        { path: '/admin/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-        { path: '/admin/complaints', label: 'All Complaints', icon: FileText },
-        { path: '/admin/authorities', label: 'Authority Users', icon: Users },
-        { path: '/admin/upload-csv', label: 'Upload CSV', icon: Upload },
-        { path: '/admin/analytics', label: 'Analytics', icon: BarChart3 },
+        { path: "/admin/dashboard", label: "Dashboard", icon: LayoutDashboard },
+        { path: "/admin/complaints", label: "All Complaints", icon: FileText },
+        { path: "/admin/authorities", label: "Authority Users", icon: Users },
+        { path: "/admin/communities", label: "Communities", icon: Users },
+        { path: "/admin/upload-csv", label: "Upload CSV", icon: Upload },
+        { path: "/admin/analytics", label: "Analytics", icon: BarChart3 },
       ];
     }
     return [];
@@ -44,7 +49,7 @@ const DashboardLayout = ({ children }) => {
       {/* Sidebar */}
       <div
         className={`fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform ${
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
         } transition-transform duration-300 ease-in-out lg:translate-x-0`}
       >
         <div className="flex flex-col h-full">
@@ -52,7 +57,9 @@ const DashboardLayout = ({ children }) => {
           <div className="flex items-center justify-between h-16 px-6 border-b">
             <div className="flex items-center space-x-2">
               <LayoutDashboard className="h-6 w-6 text-primary-600" />
-              <span className="text-lg font-bold text-gray-900">CivicSense</span>
+              <span className="text-lg font-bold text-gray-900">
+                CivicSense
+              </span>
             </div>
             <button
               onClick={() => setSidebarOpen(false)}
@@ -64,10 +71,14 @@ const DashboardLayout = ({ children }) => {
 
           {/* User Info */}
           <div className="px-6 py-4 border-b">
-            <p className="text-sm font-medium text-gray-900">{user?.name || user?.email}</p>
+            <p className="text-sm font-medium text-gray-900">
+              {user?.name || user?.email}
+            </p>
             <p className="text-xs text-gray-500 capitalize">{userType}</p>
             {user?.role && (
-              <p className="text-xs text-gray-500 capitalize">{user.role.replace('_', ' ')}</p>
+              <p className="text-xs text-gray-500 capitalize">
+                {user.role.replace("_", " ")}
+              </p>
             )}
           </div>
 
@@ -82,8 +93,8 @@ const DashboardLayout = ({ children }) => {
                   to={item.path}
                   className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
                     isActive
-                      ? 'bg-primary-100 text-primary-700'
-                      : 'text-gray-700 hover:bg-gray-100'
+                      ? "bg-primary-100 text-primary-700"
+                      : "text-gray-700 hover:bg-gray-100"
                   }`}
                   onClick={() => setSidebarOpen(false)}
                 >
@@ -135,4 +146,3 @@ const DashboardLayout = ({ children }) => {
 };
 
 export default DashboardLayout;
-
