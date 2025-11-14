@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { statsAPI } from '../../api/api';
-import StatCard from '../../components/StatCard';
-import { FileText, AlertTriangle, CheckCircle, Users } from 'lucide-react';
-import LoadingSpinner from '../../components/LoadingSpinner';
-import toast from 'react-hot-toast';
+import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { statsAPI } from "../../api/api";
+import StatCard from "../../components/StatCard";
+import { FileText, AlertTriangle, CheckCircle, Users } from "lucide-react";
+import LoadingSpinner from "../../components/LoadingSpinner";
+import toast from "react-hot-toast";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -20,7 +20,7 @@ const AdminDashboard = () => {
       const res = await statsAPI.getOverview();
       setStats(res.data.data);
     } catch (error) {
-      toast.error('Failed to load statistics');
+      toast.error("Failed to load statistics");
     } finally {
       setLoading(false);
     }
@@ -72,7 +72,9 @@ const AdminDashboard = () => {
       {/* Additional Stats */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Complaint Types</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Complaint Types
+          </h3>
           <div className="space-y-2">
             <div className="flex justify-between">
               <span className="text-gray-600">Anonymous</span>
@@ -85,7 +87,9 @@ const AdminDashboard = () => {
           </div>
         </div>
         <div className="bg-white rounded-lg shadow-sm p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            Quick Actions
+          </h3>
           <div className="space-y-2">
             <Link
               to="/admin/complaints"
@@ -111,6 +115,12 @@ const AdminDashboard = () => {
             >
               View Analytics →
             </Link>
+            <Link
+              to="/admin/communities"
+              className="block text-primary-600 hover:text-primary-700 font-medium"
+            >
+              Manage Communities →
+            </Link>
           </div>
         </div>
       </div>
@@ -119,4 +129,3 @@ const AdminDashboard = () => {
 };
 
 export default AdminDashboard;
-
