@@ -1,213 +1,420 @@
-const axios = require('axios');
-const { 
-  HUGGINGFACE_API, 
-  CLASSIFICATION_LABELS 
-} = require('../config/constants');
-const { detectCategoryByKeywords } = require('../utils/textProcessing');
+const { HfInference } = require("@huggingface/inference");
+const {
+  HUGGINGFACE_API,
+  CLASSIFICATION_LABELS,
+} = require("../config/constants");
 
 /**
  * NLP Service
  * Handles all HuggingFace API calls for sentiment analysis and classification
+ * Using official HuggingFace inference client
  */
+
+// Initialize HuggingFace client
+const hf = process.env.HUGGINGFACE_API_KEY
+  ? new HfInference(process.env.HUGGINGFACE_API_KEY)
+  : null;
 
 /**
  * Perform sentiment analysis using HuggingFace API
+ * Uses official HuggingFace inference client
  */
 const analyzeSentiment = async (text) => {
   try {
-    const response = await axios.post(
-      `${HUGGINGFACE_API.BASE_URL}/${HUGGINGFACE_API.SENTIMENT_MODEL}`,
-      { inputs: text },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    // Handle response format
-    let result = response.data;
-    if (Array.isArray(result) && result[0]) {
-      result = result[0];
+    // Check if API key exists
+    if (!hf) {
+      console.log("HUGGINGFACE_API_KEY not set, using fallback sentiment");
+      return {
+        sentiment: "neutral",
+        sentimentScore: 0.5,
+      };
     }
 
-    // Extract sentiment and score
-    if (Array.isArray(result)) {
-      const positive = result.find(r => r.label === 'POSITIVE');
-      const negative = result.find(r => r.label === 'NEGATIVE');
-      
-      if (positive && negative) {
-        const sentiment = positive.score > negative.score ? 'positive' : 'negative';
-        const sentimentScore = sentiment === 'positive' ? positive.score : negative.score;
-        return { sentiment, sentimentScore };
+    const result = await hf.textClassification({
+      model: HUGGINGFACE_API.SENTIMENT_MODEL,
+      inputs: text,
+    });
+
+    // Handle model loading
+    if (Array.isArray(result) && result[0] && result[0].error) {
+      if (result[0].error.includes("loading")) {
+        console.log("Model is loading, waiting 10 seconds...");
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+        // Retry once
+        const retryResult = await hf.textClassification({
+          model: HUGGINGFACE_API.SENTIMENT_MODEL,
+          inputs: text,
+        });
+        return processSentimentResult(retryResult);
       }
     }
 
-    // Fallback
-    return {
-      sentiment: 'neutral',
-      sentimentScore: 0.5
-    };
+    return processSentimentResult(result);
   } catch (error) {
-    console.error('Sentiment analysis error:', error.message);
+    console.error("Sentiment analysis error:", error.message);
     // Fallback on error
     return {
-      sentiment: 'neutral',
-      sentimentScore: 0.5
+      sentiment: "neutral",
+      sentimentScore: 0.5,
+    };
+  }
+};
+
+/**
+ * Process sentiment classification result
+ */
+const processSentimentResult = (result) => {
+  if (!Array.isArray(result) || result.length === 0) {
+    return {
+      sentiment: "neutral",
+      sentimentScore: 0.5,
+    };
+  }
+
+  // nlptown/bert-base-multilingual-uncased-sentiment returns: [{"label": "1 star", "score": 0.1}, ...]
+  // Labels: "1 star" (negative), "2 star", "3 star" (neutral), "4 star", "5 star" (positive)
+  const oneStar = result.find((r) => r.label === "1 star");
+  const twoStar = result.find((r) => r.label === "2 star");
+  const threeStar = result.find((r) => r.label === "3 star");
+  const fourStar = result.find((r) => r.label === "4 star");
+  const fiveStar = result.find((r) => r.label === "5 star");
+
+  // Calculate weighted sentiment
+  const negativeScore = (oneStar?.score || 0) + (twoStar?.score || 0) * 0.5;
+  const positiveScore = (fiveStar?.score || 0) + (fourStar?.score || 0) * 0.5;
+  const neutralScore = threeStar?.score || 0;
+
+  if (negativeScore > positiveScore && negativeScore > neutralScore) {
+    return {
+      sentiment: "negative",
+      sentimentScore: negativeScore,
+    };
+  } else if (positiveScore > neutralScore) {
+    return {
+      sentiment: "positive",
+      sentimentScore: positiveScore,
+    };
+  } else {
+    return {
+      sentiment: "neutral",
+      sentimentScore: neutralScore || 0.5,
     };
   }
 };
 
 /**
  * Perform zero-shot classification using HuggingFace API
- * Uses hybrid approach: keywords first, then AI validation
+ * AI-only approach: No keyword fallback - returns error if AI can't detect category
  */
 const classifyComplaint = async (text) => {
   try {
-    // Step 1: Try keyword-based detection first (more accurate)
-    const keywordResult = detectCategoryByKeywords(text);
-    
-    // If keyword detection found a category with good confidence, use it
-    if (keywordResult.category && keywordResult.confidence >= 0.7) {
-      console.log(`Category detected by keywords: ${keywordResult.category} (confidence: ${keywordResult.confidence.toFixed(2)})`);
+    // Check if API key exists
+    if (!hf) {
+      console.log("HUGGINGFACE_API_KEY not set");
       return {
-        category: keywordResult.category,
-        categoryConfidence: keywordResult.confidence
+        category: null,
+        categoryConfidence: 0,
+        error: true,
+        message:
+          "AI service not configured. Please select a category manually.",
       };
     }
 
-    // Step 2: Use AI classification as fallback or validation
-    const response = await axios.post(
-      `${HUGGINGFACE_API.BASE_URL}/${HUGGINGFACE_API.CLASSIFICATION_MODEL}`,
-      {
-        inputs: text,
-        parameters: {
-          candidate_labels: CLASSIFICATION_LABELS
-        }
+    const result = await hf.zeroShotClassification({
+      model: HUGGINGFACE_API.CLASSIFICATION_MODEL,
+      inputs: text,
+      parameters: {
+        candidate_labels: CLASSIFICATION_LABELS,
       },
-      {
-        headers: {
-          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_KEY}`,
-          'Content-Type': 'application/json'
-        },
-        timeout: 10000 // 10 second timeout
-      }
+    });
+
+    // Debug: Log the result structure
+    console.log(
+      "Classification result type:",
+      typeof result,
+      "Is array:",
+      Array.isArray(result)
     );
-
-    let result = response.data;
-    if (Array.isArray(result) && result[0]) {
-      result = result[0];
-    }
-
-    // Extract best matching label
-    if (result.labels && result.scores) {
-      const maxIndex = result.scores.indexOf(Math.max(...result.scores));
-      let aiCategory = result.labels[maxIndex];
-      let aiConfidence = result.scores[maxIndex];
-
-      // Map AI label back to our category format
-      // AI labels are descriptive, extract the base category
-      const categoryMapping = {
-        "water supply issue or water leak or water pipe problem": "water issue",
-        "electricity power outage or electrical fault or power issue": "electricity issue",
-        "road pothole or road damage or road maintenance": "road issue",
-        "garbage collection or waste management or trash disposal": "garbage issue",
-        "safety hazard or security threat or emergency situation": "safety hazard",
-        "environmental pollution or air quality or noise pollution": "environmental issue"
-      };
-
-      const mappedCategory = categoryMapping[aiCategory] || aiCategory;
-
-      // Step 3: Validate AI result with keywords
-      // If keyword detection found something but with lower confidence, check if AI agrees
-      if (keywordResult.category && keywordResult.confidence >= 0.5) {
-        // If both methods agree, use keyword result (more reliable)
-        if (mappedCategory === keywordResult.category) {
-          console.log(`AI and keywords agree: ${mappedCategory}`);
-          return {
-            category: keywordResult.category,
-            categoryConfidence: Math.max(aiConfidence, keywordResult.confidence)
-          };
-        }
-        // If they disagree and keyword confidence is decent, prefer keywords
-        if (keywordResult.confidence >= 0.6) {
-          console.log(`Using keyword result over AI (keywords: ${keywordResult.category}, AI: ${mappedCategory})`);
-          return {
-            category: keywordResult.category,
-            categoryConfidence: keywordResult.confidence
-          };
-        }
-      }
-
-      // Use AI result if confidence is good
-      if (aiConfidence >= 0.5) {
-        console.log(`Category detected by AI: ${mappedCategory} (confidence: ${aiConfidence.toFixed(2)})`);
-        return {
-          category: mappedCategory,
-          categoryConfidence: aiConfidence
-        };
+    if (result) {
+      console.log("Result keys:", Object.keys(result));
+      if (Array.isArray(result) && result[0]) {
+        console.log("First element keys:", Object.keys(result[0]));
       }
     }
 
-    // Step 4: Final fallback - use keyword result even if low confidence
-    if (keywordResult.category) {
-      console.log(`Using keyword result as fallback: ${keywordResult.category}`);
-      return {
-        category: keywordResult.category,
-        categoryConfidence: keywordResult.confidence
-      };
+    // Handle model loading
+    if (Array.isArray(result) && result[0] && result[0].error) {
+      if (result[0].error.includes("loading")) {
+        console.log("Model is loading, waiting 10 seconds...");
+        await new Promise((resolve) => setTimeout(resolve, 10000));
+        // Retry once
+        const retryResult = await hf.zeroShotClassification({
+          model: HUGGINGFACE_API.CLASSIFICATION_MODEL,
+          inputs: text,
+          parameters: {
+            candidate_labels: CLASSIFICATION_LABELS,
+          },
+        });
+        return processClassificationResult(retryResult);
+      }
     }
 
-    // Last resort fallback
-    console.log('No category detected, using default: environmental issue');
-    return {
-      category: 'environmental issue',
-      categoryConfidence: 0.5
-    };
+    return processClassificationResult(result);
   } catch (error) {
-    console.error('Classification error:', error.message);
-    
-    // On error, try keyword detection as fallback
-    const keywordResult = detectCategoryByKeywords(text);
-    if (keywordResult.category) {
-      console.log(`Using keyword detection after AI error: ${keywordResult.category}`);
-      return {
-        category: keywordResult.category,
-        categoryConfidence: keywordResult.confidence
-      };
-    }
-    
-    // Final fallback on error
+    console.error("AI classification error:", error.message);
     return {
-      category: 'environmental issue',
-      categoryConfidence: 0.5
+      category: null,
+      categoryConfidence: 0,
+      error: true,
+      message:
+        "AI service temporarily unavailable. Please try again or select a category manually.",
     };
   }
 };
 
 /**
+ * Process classification result
+ * Handles different response formats from HuggingFace client
+ */
+const processClassificationResult = (result) => {
+  // Debug logging
+  console.log(
+    "Processing classification result:",
+    JSON.stringify(result).substring(0, 300)
+  );
+
+  // Handle empty result
+  if (!result) {
+    console.log("AI returned null/undefined");
+    return {
+      category: null,
+      categoryConfidence: 0,
+      error: true,
+      message:
+        "Could not determine category. Please re-enter your problem with more details or select a category manually.",
+    };
+  }
+
+  // Format 1: Array of { label: "...", score: ... } (most common from HuggingFace client)
+  if (Array.isArray(result)) {
+    if (result.length === 0) {
+      console.log("AI returned empty array");
+      return {
+        category: null,
+        categoryConfidence: 0,
+        error: true,
+        message:
+          "Could not determine category. Please re-enter your problem with more details or select a category manually.",
+      };
+    }
+
+    // Check if first element has error
+    if (result[0] && result[0].error) {
+      console.log("AI returned error:", result[0].error);
+      return {
+        category: null,
+        categoryConfidence: 0,
+        error: true,
+        message:
+          "AI service temporarily unavailable. Please select a category manually.",
+      };
+    }
+
+    // Check if it's array of {label, score} objects
+    const firstItem = result[0];
+    if (firstItem && firstItem.label && typeof firstItem.score === "number") {
+      // Sort by score descending to get best match
+      const sorted = [...result].sort((a, b) => b.score - a.score);
+      const best = sorted[0];
+
+      const secondBest = sorted[1] || { score: 0, label: "none" };
+
+      console.log(
+        `Best category match: ${best.label} (confidence: ${best.score.toFixed(
+          2
+        )})`
+      );
+      console.log(
+        `Second best: ${secondBest.label} (confidence: ${
+          secondBest.score?.toFixed(2) || 0
+        })`
+      );
+
+      // Use the best match if:
+      // 1. It has >= 0.5 confidence (high confidence), OR
+      // 2. It's the highest score and >= 0.3 (reasonable confidence)
+      const scoreDifference = best.score - (secondBest.score || 0);
+
+      if (best.score >= 0.5 || (best.score >= 0.3 && scoreDifference > 0)) {
+        console.log(
+          `Category detected by AI: ${
+            best.label
+          } (confidence: ${best.score.toFixed(2)})`
+        );
+        return {
+          category: best.label,
+          categoryConfidence: best.score,
+        };
+      } else {
+        // AI confidence too low and not a clear winner - return error
+        console.log(
+          `AI confidence too low: ${best.score.toFixed(2)}. Best match was: ${
+            best.label
+          }, but difference from second best is only ${scoreDifference.toFixed(
+            2
+          )}`
+        );
+        return {
+          category: null,
+          categoryConfidence: best.score,
+          error: true,
+          message:
+            "Could not determine category. Please re-enter your problem with more details or select a category manually.",
+        };
+      }
+    }
+  }
+
+  // Format 2: { labels: [...], scores: [...] } (alternative format)
+  if (result.labels && result.scores) {
+    const maxIndex = result.scores.indexOf(Math.max(...result.scores));
+    const aiCategory = result.labels[maxIndex];
+    const aiConfidence = result.scores[maxIndex];
+
+    // Require minimum confidence threshold (0.5 = 50%)
+    if (aiConfidence >= 0.5) {
+      console.log(
+        `Category detected by AI: ${aiCategory} (confidence: ${aiConfidence.toFixed(
+          2
+        )})`
+      );
+      return {
+        category: aiCategory,
+        categoryConfidence: aiConfidence,
+      };
+    } else {
+      // AI confidence too low - return error
+      console.log(`AI confidence too low: ${aiConfidence.toFixed(2)}`);
+      return {
+        category: null,
+        categoryConfidence: aiConfidence,
+        error: true,
+        message:
+          "Could not determine category. Please re-enter your problem with more details or select a category manually.",
+      };
+    }
+  }
+
+  // AI didn't return valid results
+  console.log(
+    "AI returned invalid results. Result type:",
+    typeof result,
+    "Is array:",
+    Array.isArray(result),
+    "Keys:",
+    Object.keys(result || {})
+  );
+  return {
+    category: null,
+    categoryConfidence: 0,
+    error: true,
+    message:
+      "Could not determine category. Please re-enter your problem with more details or select a category manually.",
+  };
+};
+
+/**
+ * Validate urgency using HuggingFace API (optional enhancement)
+ * Hybrid approach: Used to validate/boost calculated urgency, not as primary method
+ * Returns AI urgency suggestion for validation purposes
+ */
+const validateUrgencyWithAI = async (text) => {
+  try {
+    // Skip if no API key
+    if (!hf) {
+      return null;
+    }
+
+    const result = await hf.zeroShotClassification({
+      model: HUGGINGFACE_API.CLASSIFICATION_MODEL,
+      inputs: text,
+      parameters: {
+        candidate_labels: [
+          "critical urgency - life threatening emergency requiring immediate response",
+          "urgent - serious problem requiring prompt attention",
+          "normal - standard issue that can be addressed in regular timeframe",
+        ],
+      },
+    });
+
+    // If model is loading, skip AI validation (not critical)
+    if (Array.isArray(result) && result[0] && result[0].error) {
+      if (result[0].error.includes("loading")) {
+        console.log("AI urgency validation skipped (model loading)");
+        return null;
+      }
+    }
+
+    // Handle array result
+    let processedResult = result;
+    if (Array.isArray(result) && result[0] && !result[0].error) {
+      processedResult = result[0];
+    }
+
+    if (processedResult.labels && processedResult.scores) {
+      const maxIndex = processedResult.scores.indexOf(
+        Math.max(...processedResult.scores)
+      );
+      const urgencyLabel = processedResult.labels[maxIndex];
+      const urgencyConfidence = processedResult.scores[maxIndex];
+
+      // Map AI label to urgency level
+      let aiUrgencyLevel = "normal";
+      if (urgencyLabel.includes("critical")) {
+        aiUrgencyLevel = "critical";
+      } else if (urgencyLabel.includes("urgent")) {
+        aiUrgencyLevel = "urgent";
+      }
+
+      return {
+        urgencyLevel: aiUrgencyLevel,
+        confidence: urgencyConfidence,
+      };
+    }
+
+    return null;
+  } catch (error) {
+    // Silently fail - AI validation is optional
+    console.log("AI urgency validation failed (optional):", error.message);
+    return null;
+  }
+};
+
+/**
  * Process full NLP pipeline for a complaint
+ * Note: Urgency is calculated separately using hybrid approach (logic + optional AI validation)
  */
 const processNLP = async (description) => {
   try {
-    // Run sentiment and classification in parallel
+    // Run sentiment and classification in parallel (urgency handled separately in controller)
     const [sentimentResult, classificationResult] = await Promise.all([
       analyzeSentiment(description),
-      classifyComplaint(description)
+      classifyComplaint(description),
     ]);
 
     return {
       ...sentimentResult,
-      ...classificationResult
+      ...classificationResult,
     };
   } catch (error) {
-    console.error('NLP processing error:', error.message);
+    console.error("NLP processing error:", error.message);
     return {
-      sentiment: 'neutral',
+      sentiment: "neutral",
       sentimentScore: 0.5,
-      category: 'environmental issue',
-      categoryConfidence: 0.5
+      category: null,
+      categoryConfidence: 0,
+      error: true,
+      message: "AI processing failed. Please try again.",
     };
   }
 };
@@ -215,6 +422,6 @@ const processNLP = async (description) => {
 module.exports = {
   analyzeSentiment,
   classifyComplaint,
-  processNLP
+  validateUrgencyWithAI,
+  processNLP,
 };
-
