@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { statsAPI } from '../../api/api';
 import StatCard from '../../components/StatCard';
 import { FileText, AlertTriangle, CheckCircle, Users } from 'lucide-react';
@@ -86,30 +87,30 @@ const AdminDashboard = () => {
         <div className="bg-white rounded-lg shadow-sm p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
           <div className="space-y-2">
-            <a
-              href="/admin/complaints"
+            <Link
+              to="/admin/complaints"
               className="block text-primary-600 hover:text-primary-700 font-medium"
             >
               View All Complaints →
-            </a>
-            <a
-              href="/admin/authorities"
+            </Link>
+            <Link
+              to="/admin/authorities"
               className="block text-primary-600 hover:text-primary-700 font-medium"
             >
               Manage Authority Users →
-            </a>
-            <a
-              href="/admin/upload-csv"
+            </Link>
+            <Link
+              to="/admin/upload-csv"
               className="block text-primary-600 hover:text-primary-700 font-medium"
             >
               Upload CSV →
-            </a>
-            <a
-              href="/admin/analytics"
+            </Link>
+            <Link
+              to="/admin/analytics"
               className="block text-primary-600 hover:text-primary-700 font-medium"
             >
               View Analytics →
-            </a>
+            </Link>
           </div>
         </div>
       </div>

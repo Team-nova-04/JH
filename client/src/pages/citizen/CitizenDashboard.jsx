@@ -65,7 +65,9 @@ const CitizenDashboard = () => {
       ) : (
         <div className="grid grid-cols-1 gap-6">
           {complaints.map((complaint) => (
-            <ComplaintCard key={complaint._id} complaint={complaint} />
+            <Link key={complaint._id} to={`/citizen/complaints/${complaint._id}`}>
+              <ComplaintCard complaint={complaint} />
+            </Link>
           ))}
         </div>
       )}

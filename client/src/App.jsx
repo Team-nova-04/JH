@@ -1,43 +1,56 @@
 // App.js - Updated with AOS initialization
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from './context/AuthContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import DashboardLayout from './layouts/DashboardLayout';
-import Navbar from './components/Navbar';
-import Footer from './components/Footer';
-import Toast from './components/Toast';
-import { useEffect } from 'react';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import {
+  BrowserRouter as Router,
+  Routes,
+  Route,
+  Navigate,
+} from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
+import ProtectedRoute from "./components/ProtectedRoute";
+import DashboardLayout from "./layouts/DashboardLayout";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Toast from "./components/Toast";
+import { useEffect } from "react";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 // Public Pages
-import LandingPage from './pages/LandingPage';
-import AboutPage from './pages/AboutPage';
-import ContactPage from './pages/ContactPage';
+import LandingPage from "./pages/LandingPage";
+import AboutPage from "./pages/AboutPage";
+import ContactPage from "./pages/ContactPage";
 
 // Citizen Pages
-import CitizenLogin from './pages/citizen/CitizenLogin';
-import CitizenRegister from './pages/citizen/CitizenRegister';
-import CitizenDashboard from './pages/citizen/CitizenDashboard';
+import CitizenLogin from "./pages/citizen/CitizenLogin";
+import CitizenRegister from "./pages/citizen/CitizenRegister";
+import CitizenDashboard from "./pages/citizen/CitizenDashboard";
 
 // Complaint Pages
-import ComplaintSubmit from './pages/ComplaintSubmit';
-import ComplaintConfirmation from './pages/ComplaintConfirmation';
+import ComplaintSubmit from "./pages/ComplaintSubmit";
+import ComplaintConfirmation from "./pages/ComplaintConfirmation";
 
 // Authority Pages
-import AuthorityLogin from './pages/authority/AuthorityLogin';
-import AuthorityDashboard from './pages/authority/AuthorityDashboard';
-import AuthorityComplaints from './pages/authority/AuthorityComplaints';
+import AuthorityLogin from "./pages/authority/AuthorityLogin";
+import AuthorityDashboard from "./pages/authority/AuthorityDashboard";
+import AuthorityComplaints from "./pages/authority/AuthorityComplaints";
+import ComplaintDetail from "./pages/authority/ComplaintDetail";
 
 // Admin Pages
-import AdminLogin from './pages/admin/AdminLogin';
-import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminAllComplaints from "./pages/admin/AdminAllComplaints";
+import AdminManageAuthorities from "./pages/admin/AdminManageAuthorities";
+import AdminUploadCSV from "./pages/admin/AdminUploadCSV";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
+
+// Citizen Pages
+import CitizenComplaintDetail from "./pages/citizen/CitizenComplaintDetail";
 
 function App() {
   useEffect(() => {
     AOS.init({
       duration: 1000,
-      easing: 'ease-out-cubic',
+      easing: "ease-out-cubic",
       once: true,
       offset: 50,
     });
@@ -61,27 +74,47 @@ function App() {
               <Route
                 path="/citizen/dashboard"
                 element={
-                  <ProtectedRoute allowedRoles={['citizen']}>
+                  <ProtectedRoute allowedRoles={["citizen"]}>
                     <CitizenDashboard />
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/citizen/complaints/:id"
+                element={
+                  <ProtectedRoute allowedRoles={["citizen"]}>
+                    <CitizenComplaintDetail />
                   </ProtectedRoute>
                 }
               />
 
               {/* Complaint Routes */}
               <Route path="/complaint/submit" element={<ComplaintSubmit />} />
-              <Route path="/complaint/confirmation" element={<ComplaintConfirmation />} />
+              <Route
+                path="/complaint/confirmation"
+                element={<ComplaintConfirmation />}
+              />
 
               {/* Authority Routes */}
               <Route path="/authority/login" element={<AuthorityLogin />} />
               <Route
                 path="/authority/*"
                 element={
-                  <ProtectedRoute allowedRoles={['authority']}>
+                  <ProtectedRoute allowedRoles={["authority"]}>
                     <DashboardLayout>
                       <Routes>
-                        <Route path="dashboard" element={<AuthorityDashboard />} />
-                        <Route path="complaints" element={<AuthorityComplaints />} />
-                        <Route path="complaints/:id" element={<div>Complaint Detail (Coming Soon)</div>} />
+                        <Route
+                          path="dashboard"
+                          element={<AuthorityDashboard />}
+                        />
+                        <Route
+                          path="complaints"
+                          element={<AuthorityComplaints />}
+                        />
+                        <Route
+                          path="complaints/:id"
+                          element={<ComplaintDetail />}
+                        />
                       </Routes>
                     </DashboardLayout>
                   </ProtectedRoute>
@@ -93,14 +126,20 @@ function App() {
               <Route
                 path="/admin/*"
                 element={
-                  <ProtectedRoute allowedRoles={['admin']}>
+                  <ProtectedRoute allowedRoles={["admin"]}>
                     <DashboardLayout>
                       <Routes>
                         <Route path="dashboard" element={<AdminDashboard />} />
-                        <Route path="complaints" element={<div>All Complaints (Coming Soon)</div>} />
-                        <Route path="authorities" element={<div>Manage Authorities (Coming Soon)</div>} />
-                        <Route path="upload-csv" element={<div>Upload CSV (Coming Soon)</div>} />
-                        <Route path="analytics" element={<div>Analytics (Coming Soon)</div>} />
+                        <Route
+                          path="complaints"
+                          element={<AdminAllComplaints />}
+                        />
+                        <Route
+                          path="authorities"
+                          element={<AdminManageAuthorities />}
+                        />
+                        <Route path="upload-csv" element={<AdminUploadCSV />} />
+                        <Route path="analytics" element={<AdminAnalytics />} />
                       </Routes>
                     </DashboardLayout>
                   </ProtectedRoute>

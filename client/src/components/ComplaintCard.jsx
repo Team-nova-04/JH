@@ -79,7 +79,8 @@ const ComplaintCard = ({ complaint, showActions = false, onStatusChange = null, 
         
         {showActions && onStatusChange && (
           <div className="flex space-x-2">
-            {complaint.status !== 'seen' && (
+            {/* Show "Mark Seen" only if status is pending */}
+            {complaint.status === 'pending' && (
               <button
                 onClick={() => onStatusChange(complaint._id, 'seen')}
                 className="px-4 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 font-medium transition-all duration-200 transform hover:scale-105"
@@ -87,7 +88,8 @@ const ComplaintCard = ({ complaint, showActions = false, onStatusChange = null, 
                 Mark Seen
               </button>
             )}
-            {complaint.status !== 'in_progress' && (
+            {/* Show "In Progress" only if status is seen */}
+            {complaint.status === 'seen' && (
               <button
                 onClick={() => onStatusChange(complaint._id, 'in_progress')}
                 className="px-4 py-2 text-sm bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 font-medium transition-all duration-200 transform hover:scale-105"
@@ -95,7 +97,8 @@ const ComplaintCard = ({ complaint, showActions = false, onStatusChange = null, 
                 In Progress
               </button>
             )}
-            {complaint.status !== 'resolved' && (
+            {/* Show "Resolve" only if status is in_progress */}
+            {complaint.status === 'in_progress' && (
               <button
                 onClick={() => onStatusChange(complaint._id, 'resolved')}
                 className="px-4 py-2 text-sm bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg hover:from-green-600 hover:to-emerald-700 font-medium shadow-md transition-all duration-200 transform hover:scale-105"
@@ -103,11 +106,20 @@ const ComplaintCard = ({ complaint, showActions = false, onStatusChange = null, 
                 Resolve
               </button>
             )}
+            {/* Show "Back to Seen" if status is in_progress (optional flexibility) */}
+            {complaint.status === 'in_progress' && (
+              <button
+                onClick={() => onStatusChange(complaint._id, 'seen')}
+                className="px-4 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-medium transition-all duration-200"
+              >
+                Back to Seen
+              </button>
+            )}
           </div>
         )}
         {!showActions && (
           <Link
-            to={`/authority/complaints/${complaint._id}`}
+            to={`/citizen/complaints/${complaint._id}`}
             className="text-blue-600 hover:text-blue-700 text-sm font-semibold flex items-center space-x-1 group-hover:underline transition-all duration-200"
           >
             <span>View Details</span>

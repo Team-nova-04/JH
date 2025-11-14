@@ -208,6 +208,40 @@ const updateStatus = async (req, res) => {
       });
     }
 
+    // Validate status transition - enforce proper flow
+    const currentStatus = complaint.status;
+    const statusFlow = {
+      pending: ["seen"],
+      seen: ["in_progress"],
+      in_progress: ["resolved"],
+      resolved: [], // Cannot change from resolved
+    };
+
+    // Check if transition is valid
+    if (!statusFlow[currentStatus]?.includes(status)) {
+      // Allow staying in the same status (no-op)
+      if (currentStatus === status) {
+        return res.json({
+          success: true,
+          message: "Status is already set to this value",
+          data: { complaint },
+        });
+      }
+
+      // Check if trying to go backwards (allow some flexibility)
+      const allowedBackwards = {
+        in_progress: ["seen"], // Can go back from in_progress to seen
+        resolved: [], // Cannot go back from resolved
+      };
+
+      if (!allowedBackwards[currentStatus]?.includes(status)) {
+        return res.status(400).json({
+          success: false,
+          message: `Invalid status transition. Current status: ${currentStatus}. Allowed next statuses: ${statusFlow[currentStatus]?.join(", ") || "none"}`,
+        });
+      }
+    }
+
     // Update status
     complaint.status = status;
     if (status === "resolved") {

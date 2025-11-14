@@ -10,9 +10,11 @@ const { calculateHazardKeywordScore } = require('../utils/textProcessing');
  */
 
 /**
- * Calculate urgency score using the formula:
- * urgencyScore = (sentimentScore * 0.4) + (categoryConfidence * 0.3) + 
- *                (hazardKeywordScore * 0.2) + (trustScore * 0.1)
+ * Calculate urgency score using improved formula:
+ * urgencyScore = (sentimentScore * 0.3) + (categoryConfidence * 0.2) + 
+ *                (hazardKeywordScore * 0.4) + (trustScore * 0.1)
+ * 
+ * Increased weight for hazard keywords as they're better indicators of urgency
  */
 const calculateUrgencyScore = (data) => {
   const {
@@ -22,11 +24,24 @@ const calculateUrgencyScore = (data) => {
     trustScore = 0.5
   } = data;
 
-  const urgencyScore = 
-    (sentimentScore * 0.4) +
-    (categoryConfidence * 0.3) +
-    (hazardKeywordScore * 0.2) +
+  // Base urgency score
+  let urgencyScore = 
+    (sentimentScore * 0.3) +
+    (categoryConfidence * 0.2) +
+    (hazardKeywordScore * 0.4) +
     (trustScore * 0.1);
+
+  // Boost urgency if hazard score is high (indicates dangerous situation)
+  if (hazardKeywordScore >= 0.6) {
+    urgencyScore = Math.min(urgencyScore + 0.15, 1); // Boost by 15%
+  } else if (hazardKeywordScore >= 0.4) {
+    urgencyScore = Math.min(urgencyScore + 0.1, 1); // Boost by 10%
+  }
+
+  // Boost urgency if sentiment is very negative (indicates serious concern)
+  if (sentimentScore >= 0.7) {
+    urgencyScore = Math.min(urgencyScore + 0.1, 1); // Boost by 10%
+  }
 
   // Ensure score is between 0 and 1
   return Math.min(Math.max(urgencyScore, 0), 1);
