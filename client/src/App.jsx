@@ -1,3 +1,4 @@
+// App.js - Updated with AOS initialization
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
@@ -5,6 +6,9 @@ import DashboardLayout from './layouts/DashboardLayout';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import Toast from './components/Toast';
+import { useEffect } from 'react';
+import AOS from 'aos';
+import 'aos/dist/aos.css';
 
 // Public Pages
 import LandingPage from './pages/LandingPage';
@@ -30,10 +34,19 @@ import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 
 function App() {
+  useEffect(() => {
+    AOS.init({
+      duration: 1000,
+      easing: 'ease-out-cubic',
+      once: true,
+      offset: 50,
+    });
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
-        <div className="min-h-screen flex flex-col">
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
           <Navbar />
           <main className="flex-grow">
             <Routes>
