@@ -1,3 +1,63 @@
+/*
+CivicSense – AI-Powered Public Complaint Management System
+
+CivicSense is a full-stack MERN application designed to help citizens report public issues and automatically route those complaints to the correct government authorities using AI/NLP.
+
+The system includes:
+
+- A citizen-facing portal for submitting complaints (anonymous or logged-in)
+- An AI engine that analyzes complaint text using HuggingFace NLP models
+- Automated urgency scoring
+- Automatic authority assignment (Water Board, CEB, Municipal Council, RDA, Police Safety, Disaster Management)
+- Role-based dashboards for authorities
+- An admin panel for oversight and CSV data ingestion
+
+Key Capabilities
+
+- Citizens can create accounts, log in, and submit complaints with description, location, and optional photos.
+- Anonymous complaints are allowed but have lower trust scores.
+- NLP classification determines sentiment, category, summary, keywords, and urgency level.
+- Complaints are ranked by urgency and routed to responsible authorities.
+- Authorities can log in to view only the issues assigned to their department.
+- Authorities can update statuses (pending, seen, in-progress, resolved) and add notes.
+- Admins can manage authority accounts and upload CSV data for bulk complaint ingestion.
+- A dashboard provides analytics on category distribution, urgent complaints, location trends, and complaint history.
+
+AI / NLP Pipeline
+
+The backend integrates HuggingFace Inference API for:
+
+- Sentiment analysis
+- Zero-shot category classification
+- Key phrase extraction
+- Urgency scoring
+- Automatic authority routing
+
+NLP models used:
+
+- `distilbert-base-uncased-finetuned-sst-2-english` (sentiment)
+- `facebook/bart-large-mnli` (category classification)
+
+Tech Stack
+
+- **Frontend**: React, Tailwind, React Router, Recharts, React-Leaflet
+- **Backend**: Node.js, Express.js, JWT, Multer, Mongoose
+- **Database**: MongoDB
+- **AI**: HuggingFace Inference API
+- **Storage**: Local uploads or cloud storage
+- **Auth**: JWT-based with role-based access control
+
+User Roles
+
+- **Citizen** – submit complaints, track their submissions
+- **Authority** – view and manage relevant complaints
+- **Admin** – manage users, data, and system settings
+
+Project Goal
+
+To build an intelligent, scalable, AI-powered complaint management system that improves public service responsiveness, community engagement, and emergency handling in Sri Lanka.
+*/
+
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
@@ -21,9 +81,15 @@ connectDB();
 
 // Security middleware
 app.use(helmet());
+
+// Parse CLIENT_URL to support multiple origins
+const allowedOrigins = (process.env.CLIENT_URL || "http://localhost:5173")
+  .split(",")
+  .map((url) => url.trim());
+
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:5173",
+    origin: allowedOrigins,
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],

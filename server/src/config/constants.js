@@ -11,6 +11,9 @@ const AUTHORITY_MAPPING = {
   "garbage issue": "municipal_council",
   "safety hazard": "police_safety",
   "environmental issue": "municipal_council",
+  disaster: "disaster_management",
+  flood: "disaster_management",
+  storm: "disaster_management",
 };
 
 // Hazard keywords for urgency detection
@@ -23,6 +26,7 @@ const HAZARD_KEYWORDS = [
   "fire",
   "danger",
   "injury",
+  "accident",
 ];
 
 // Urgency thresholds
@@ -64,6 +68,9 @@ const PERSONAL_PREMISES_KEYWORDS = [
   "personal",
 ];
 
+// Categories that require user identification
+const REQUIRES_IDENTIFICATION_CATEGORIES = ["water issue", "electricity issue"];
+
 module.exports = {
   AUTHORITY_MAPPING,
   HAZARD_KEYWORDS,
@@ -72,4 +79,5 @@ module.exports = {
   HUGGINGFACE_API,
   CLASSIFICATION_LABELS,
   PERSONAL_PREMISES_KEYWORDS,
+  REQUIRES_IDENTIFICATION_CATEGORIES,
 };

@@ -1,7 +1,8 @@
-const bcrypt = require('bcryptjs');
-const Authority = require('../models/Authority');
-const Complaint = require('../models/Complaint');
-const { generateToken } = require('../utils/jwt');
+const crypto = require("crypto");
+const bcrypt = require("bcryptjs");
+const Authority = require("../models/Authority");
+const Complaint = require("../models/Complaint");
+const { generateToken } = require("../utils/jwt");
 
 /**
  * Authority Controller
@@ -19,7 +20,7 @@ const login = async (req, res) => {
     if (!email || !password) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide email and password'
+        message: "Please provide email and password",
       });
     }
 
@@ -27,7 +28,7 @@ const login = async (req, res) => {
     if (!authority) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: "Invalid credentials",
       });
     }
 
@@ -35,15 +36,15 @@ const login = async (req, res) => {
     if (!isMatch) {
       return res.status(401).json({
         success: false,
-        message: 'Invalid credentials'
+        message: "Invalid credentials",
       });
     }
 
-    const token = generateToken(authority._id, 'authority');
+    const token = generateToken(authority._id, "authority");
 
     res.json({
       success: true,
-      message: 'Login successful',
+      message: "Login successful",
       data: {
         token,
         authority: {
@@ -51,16 +52,16 @@ const login = async (req, res) => {
           name: authority.name,
           email: authority.email,
           role: authority.role,
-          department: authority.department
-        }
-      }
+          department: authority.department,
+        },
+      },
     });
   } catch (error) {
-    console.error('Authority login error:', error);
+    console.error("Authority login error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error during login',
-      error: error.message
+      message: "Server error during login",
+      error: error.message,
     });
   }
 };
@@ -71,7 +72,14 @@ const login = async (req, res) => {
  */
 const getComplaints = async (req, res) => {
   try {
-    const { status, urgency, page = 1, limit = 20 } = req.query;
+    const {
+      status,
+      urgency,
+      category,
+      location,
+      page = 1,
+      limit = 20,
+    } = req.query;
     const authority = req.user;
 
     // Build query
@@ -83,10 +91,20 @@ const getComplaints = async (req, res) => {
     }
 
     // Filter by urgency
-    if (urgency === 'urgent') {
+    if (urgency === "urgent") {
       query.urgencyScore = { $gte: 0.7 };
-    } else if (urgency === 'critical') {
+    } else if (urgency === "critical") {
       query.urgencyScore = { $gte: 0.9 };
+    }
+
+    // Filter by category
+    if (category) {
+      query.category = category;
+    }
+
+    // Filter by location (case-insensitive partial match)
+    if (location) {
+      query.location = { $regex: location, $options: "i" };
     }
 
     // Pagination
@@ -97,7 +115,7 @@ const getComplaints = async (req, res) => {
       .sort({ urgencyScore: -1, submittedAt: -1 })
       .limit(parseInt(limit))
       .skip(skip)
-      .select('-notes');
+      .select("-notes");
 
     // Get total count
     const total = await Complaint.countDocuments(query);
@@ -108,14 +126,14 @@ const getComplaints = async (req, res) => {
       total,
       page: parseInt(page),
       pages: Math.ceil(total / parseInt(limit)),
-      data: { complaints }
+      data: { complaints },
     });
   } catch (error) {
-    console.error('Get complaints error:', error);
+    console.error("Get complaints error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: "Server error",
+      error: error.message,
     });
   }
 };
@@ -131,7 +149,7 @@ const getComplaintById = async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Complaint not found",
       });
     }
 
@@ -139,20 +157,20 @@ const getComplaintById = async (req, res) => {
     if (complaint.assignedAuthority !== req.user.role) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Complaint not assigned to your authority.'
+        message: "Access denied. Complaint not assigned to your authority.",
       });
     }
 
     res.json({
       success: true,
-      data: { complaint }
+      data: { complaint },
     });
   } catch (error) {
-    console.error('Get complaint error:', error);
+    console.error("Get complaint error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: "Server error",
+      error: error.message,
     });
   }
 };
@@ -164,12 +182,12 @@ const getComplaintById = async (req, res) => {
 const updateStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const validStatuses = ['pending', 'seen', 'in_progress', 'resolved'];
+    const validStatuses = ["pending", "seen", "in_progress", "resolved"];
 
     if (!status || !validStatuses.includes(status)) {
       return res.status(400).json({
         success: false,
-        message: `Status must be one of: ${validStatuses.join(', ')}`
+        message: `Status must be one of: ${validStatuses.join(", ")}`,
       });
     }
 
@@ -178,7 +196,7 @@ const updateStatus = async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Complaint not found",
       });
     }
 
@@ -186,28 +204,28 @@ const updateStatus = async (req, res) => {
     if (complaint.assignedAuthority !== req.user.role) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Complaint not assigned to your authority.'
+        message: "Access denied. Complaint not assigned to your authority.",
       });
     }
 
     // Update status
     complaint.status = status;
-    if (status === 'resolved') {
+    if (status === "resolved") {
       complaint.resolvedAt = new Date();
     }
     await complaint.save();
 
     res.json({
       success: true,
-      message: 'Status updated successfully',
-      data: { complaint }
+      message: "Status updated successfully",
+      data: { complaint },
     });
   } catch (error) {
-    console.error('Update status error:', error);
+    console.error("Update status error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: "Server error",
+      error: error.message,
     });
   }
 };
@@ -223,7 +241,7 @@ const addNote = async (req, res) => {
     if (!content) {
       return res.status(400).json({
         success: false,
-        message: 'Note content is required'
+        message: "Note content is required",
       });
     }
 
@@ -232,7 +250,7 @@ const addNote = async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Complaint not found",
       });
     }
 
@@ -240,34 +258,34 @@ const addNote = async (req, res) => {
     if (complaint.assignedAuthority !== req.user.role) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Complaint not assigned to your authority.'
+        message: "Access denied. Complaint not assigned to your authority.",
       });
     }
 
     // Add note
     complaint.notes.push({
       content,
-      addedBy: req.user.name || req.user.email
+      addedBy: req.user.name || req.user.email,
     });
     await complaint.save();
 
     res.json({
       success: true,
-      message: 'Note added successfully',
-      data: { complaint }
+      message: "Note added successfully",
+      data: { complaint },
     });
   } catch (error) {
-    console.error('Add note error:', error);
+    console.error("Add note error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: "Server error",
+      error: error.message,
     });
   }
 };
 
 /**
- * Request contact from citizen
+ * Request contact from citizen for anonymous complaints
  * POST /api/authority/complaints/:id/request-contact
  */
 const requestContact = async (req, res) => {
@@ -277,7 +295,7 @@ const requestContact = async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Complaint not found",
       });
     }
 
@@ -285,42 +303,63 @@ const requestContact = async (req, res) => {
     if (complaint.assignedAuthority !== req.user.role) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Complaint not assigned to your authority.'
+        message: "Access denied. Complaint not assigned to your authority.",
       });
     }
 
-    // Check if complaint is anonymous
-    if (complaint.anonymous) {
-      return res.status(400).json({
-        success: false,
-        message: 'Cannot request contact for anonymous complaints'
+    // Handle non-anonymous complaints
+    if (!complaint.anonymous) {
+      complaint.notes.push({
+        content: `Contact details viewed by ${req.user.name || req.user.email}`,
+        addedBy: "System",
+      });
+      await complaint.save();
+
+      return res.json({
+        success: true,
+        message: "Contact details retrieved for registered user.",
+        data: {
+          citizenContact: {
+            email: complaint.email,
+            phone: complaint.phone,
+            name: complaint.name,
+          },
+        },
       });
     }
 
-    // Add note about contact request
-    complaint.notes.push({
-      content: `Contact requested by ${req.user.name || req.user.email}`,
-      addedBy: req.user.name || req.user.email
-    });
+    // Handle anonymous complaints
+    // Generate a secure, single-use token
+    const token = crypto.randomBytes(32).toString("hex");
+    const tokenExpiry = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
+    complaint.contactRequest = {
+      status: "requested",
+      token: token,
+      tokenExpires: tokenExpiry,
+      requestedBy: req.user._id,
+      requestedAt: new Date(),
+    };
+
     await complaint.save();
+
+    // This URL would be given to the anonymous user when they submit the complaint
+    const responseUrl = `${process.env.CLIENT_URL}/complaint/${complaint._id}/provide-contact?token=${token}`;
 
     res.json({
       success: true,
-      message: 'Contact request logged',
+      message:
+        "Contact request initiated for anonymous user. Share the response URL with the user.",
       data: {
-        citizenContact: {
-          email: complaint.email,
-          phone: complaint.phone,
-          name: complaint.name
-        }
-      }
+        responseUrl: responseUrl, // In a real app, this would be handled differently
+      },
     });
   } catch (error) {
-    console.error('Request contact error:', error);
+    console.error("Request contact error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: "Server error",
+      error: error.message,
     });
   }
 };
@@ -331,6 +370,5 @@ module.exports = {
   getComplaintById,
   updateStatus,
   addNote,
-  requestContact
+  requestContact,
 };
-

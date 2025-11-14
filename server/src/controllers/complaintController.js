@@ -1,13 +1,19 @@
-const Complaint = require('../models/Complaint');
-const { processNLP } = require('../services/nlpService');
-const { processUrgency, calculateUrgencyScore } = require('../services/urgencyService');
-const { assignAuthority } = require('../services/authorityService');
-const { 
-  extractKeyPhrases, 
+const Complaint = require("../models/Complaint");
+const { processNLP } = require("../services/nlpService");
+const {
+  processUrgency,
+  calculateUrgencyScore,
+} = require("../services/urgencyService");
+const { assignAuthority } = require("../services/authorityService");
+const {
+  extractKeyPhrases,
   generateSummary,
-  mentionsPersonalPremises 
-} = require('../utils/textProcessing');
-const { TRUST_SCORES } = require('../config/constants');
+  mentionsPersonalPremises,
+} = require("../utils/textProcessing");
+const {
+  TRUST_SCORES,
+  REQUIRES_IDENTIFICATION_CATEGORIES,
+} = require("../config/constants");
 
 /**
  * Complaint Controller
@@ -28,7 +34,22 @@ const submitComplaint = async (req, res) => {
     if (!description || !location) {
       return res.status(400).json({
         success: false,
-        message: 'Description and location are required'
+        message: "Description and location are required",
+      });
+    }
+
+    // Process NLP to get the category if not provided
+    const nlpResults = await processNLP(description);
+    const finalCategory = category || nlpResults.category;
+
+    // Check if the category requires identification and if the user is anonymous
+    if (
+      REQUIRES_IDENTIFICATION_CATEGORIES.includes(finalCategory) &&
+      !citizen
+    ) {
+      return res.status(401).json({
+        success: false,
+        message: `Contact information is required for complaints in the '${finalCategory}' category. Please log in to submit.`,
       });
     }
 
@@ -36,23 +57,20 @@ const submitComplaint = async (req, res) => {
     if (mentionsPersonalPremises(description) && !citizen) {
       return res.status(401).json({
         success: false,
-        message: 'Login required for personal premises complaints'
+        message: "Login required for personal premises complaints",
       });
     }
 
     // Check if safety hazard requires location
-    if (category === 'safety hazard' && !location) {
+    if (finalCategory === "safety hazard" && !location) {
       return res.status(400).json({
         success: false,
-        message: 'Location is required for safety hazard complaints'
+        message: "Location is required for safety hazard complaints",
       });
     }
 
     // Determine if anonymous
     const isAnonymous = !citizen;
-
-    // Process NLP
-    const nlpResults = await processNLP(description);
 
     // Process urgency
     const urgencyData = processUrgency(description, isAnonymous);
@@ -60,11 +78,10 @@ const submitComplaint = async (req, res) => {
       sentimentScore: nlpResults.sentimentScore,
       categoryConfidence: nlpResults.categoryConfidence,
       hazardKeywordScore: urgencyData.hazardKeywordScore,
-      trustScore: urgencyData.trustScore
+      trustScore: urgencyData.trustScore,
     });
 
     // Assign authority (use provided category or NLP result)
-    const finalCategory = category || nlpResults.category;
     const assignedAuthority = assignAuthority(finalCategory);
 
     // Generate summary and key phrases
@@ -91,13 +108,13 @@ const submitComplaint = async (req, res) => {
       urgencyScore,
       trustScore: urgencyData.trustScore,
       assignedAuthority,
-      status: 'pending',
-      notes: []
+      status: "pending",
+      notes: [],
     });
 
     res.status(201).json({
       success: true,
-      message: 'Complaint submitted successfully',
+      message: "Complaint submitted successfully",
       data: {
         complaint: {
           id: complaint._id,
@@ -107,16 +124,16 @@ const submitComplaint = async (req, res) => {
           urgencyScore: complaint.urgencyScore,
           assignedAuthority: complaint.assignedAuthority,
           status: complaint.status,
-          submittedAt: complaint.submittedAt
-        }
-      }
+          submittedAt: complaint.submittedAt,
+        },
+      },
     });
   } catch (error) {
-    console.error('Submit complaint error:', error);
+    console.error("Submit complaint error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error during complaint submission',
-      error: error.message
+      message: "Server error during complaint submission",
+      error: error.message,
     });
   }
 };
@@ -127,24 +144,24 @@ const submitComplaint = async (req, res) => {
  */
 const getMyComplaints = async (req, res) => {
   try {
-    const complaints = await Complaint.find({ 
+    const complaints = await Complaint.find({
       citizenId: req.user._id,
-      anonymous: false
+      anonymous: false,
     })
-    .sort({ submittedAt: -1 })
-    .select('-notes');
+      .sort({ submittedAt: -1 })
+      .select("-notes");
 
     res.json({
       success: true,
       count: complaints.length,
-      data: { complaints }
+      data: { complaints },
     });
   } catch (error) {
-    console.error('Get my complaints error:', error);
+    console.error("Get my complaints error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: "Server error",
+      error: error.message,
     });
   }
 };
@@ -160,7 +177,7 @@ const getComplaintById = async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Complaint not found",
       });
     }
 
@@ -169,26 +186,26 @@ const getComplaintById = async (req, res) => {
       if (complaint.citizenId.toString() !== req.user._id.toString()) {
         return res.status(403).json({
           success: false,
-          message: 'Access denied'
+          message: "Access denied",
         });
       }
     } else if (complaint.anonymous) {
       return res.status(403).json({
         success: false,
-        message: 'Cannot access anonymous complaint'
+        message: "Cannot access anonymous complaint",
       });
     }
 
     res.json({
       success: true,
-      data: { complaint }
+      data: { complaint },
     });
   } catch (error) {
-    console.error('Get complaint error:', error);
+    console.error("Get complaint error:", error);
     res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: "Server error",
+      error: error.message,
     });
   }
 };
@@ -196,6 +213,5 @@ const getComplaintById = async (req, res) => {
 module.exports = {
   submitComplaint,
   getMyComplaints,
-  getComplaintById
+  getComplaintById,
 };
-

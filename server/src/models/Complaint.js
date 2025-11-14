@@ -137,6 +137,32 @@ const complaintSchema = new mongoose.Schema(
       },
     ],
 
+    // For anonymous complaints, allows authorities to request contact info
+    contactRequest: {
+      status: {
+        type: String,
+        enum: ["none", "requested", "provided", "declined"],
+        default: "none",
+      },
+      token: {
+        type: String,
+        default: null,
+      },
+      tokenExpires: {
+        type: Date,
+        default: null,
+      },
+      requestedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Authority",
+        default: null,
+      },
+      requestedAt: {
+        type: Date,
+        default: null,
+      },
+    },
+
     // Metadata
     submittedAt: {
       type: Date,
@@ -174,3 +200,4 @@ complaintSchema.pre("save", function (next) {
 });
 
 module.exports = mongoose.model("Complaint", complaintSchema);
+``;
