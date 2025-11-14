@@ -1,8 +1,17 @@
 // components/Navbar.js - Enhanced with modern design
-import { Link, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import { Menu, X, LogOut, User, Shield, Settings, TrendingUp } from 'lucide-react';
-import { useState } from 'react';
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import {
+  Menu,
+  X,
+  LogOut,
+  User,
+  Shield,
+  Settings,
+  TrendingUp,
+  Users,
+} from "lucide-react";
+import { useState } from "react";
 
 const Navbar = () => {
   const { isAuthenticated, userType, user, logout } = useAuth();
@@ -11,14 +20,14 @@ const Navbar = () => {
 
   const handleLogout = () => {
     logout();
-    navigate('/');
+    navigate("/");
   };
 
   const getDashboardLink = () => {
-    if (userType === 'citizen') return '/citizen/dashboard';
-    if (userType === 'authority') return '/authority/dashboard';
-    if (userType === 'admin') return '/admin/dashboard';
-    return '/';
+    if (userType === "citizen") return "/citizen/dashboard";
+    if (userType === "authority") return "/authority/dashboard";
+    if (userType === "admin") return "/admin/dashboard";
+    return "/";
   };
 
   return (
@@ -43,20 +52,27 @@ const Navbar = () => {
           <div className="hidden md:flex items-center space-x-1">
             {!isAuthenticated ? (
               <>
-                <Link 
-                  to="/" 
+                <Link
+                  to="/"
                   className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-blue-50 font-medium"
                 >
                   Home
                 </Link>
-                <Link 
-                  to="/about" 
+                <Link
+                  to="/about"
                   className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-blue-50 font-medium"
                 >
                   About
                 </Link>
-                <Link 
-                  to="/contact" 
+                <Link
+                  to="/communities"
+                  className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-blue-50 font-medium flex items-center space-x-1"
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Communities</span>
+                </Link>
+                <Link
+                  to="/contact"
                   className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-blue-50 font-medium"
                 >
                   Contact
@@ -76,14 +92,21 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link 
-                  to={getDashboardLink()} 
+                <Link
+                  to={getDashboardLink()}
                   className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-blue-50 font-medium flex items-center space-x-1"
                 >
                   <TrendingUp className="h-4 w-4" />
                   <span>Dashboard</span>
                 </Link>
-                {userType === 'citizen' && (
+                <Link
+                  to="/communities"
+                  className="text-gray-700 hover:text-blue-600 px-4 py-2 rounded-lg transition-all duration-200 hover:bg-blue-50 font-medium flex items-center space-x-1"
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Communities</span>
+                </Link>
+                {userType === "citizen" && (
                   <Link
                     to="/complaint/submit"
                     className="bg-gradient-to-r from-green-500 to-emerald-600 text-white hover:from-green-600 hover:to-emerald-700 px-6 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all duration-200 transform hover:-translate-y-0.5 ml-2"
@@ -94,7 +117,9 @@ const Navbar = () => {
                 <div className="flex items-center space-x-3 ml-4 pl-4 border-l border-gray-200">
                   <div className="flex items-center space-x-2 bg-blue-50 rounded-full px-3 py-1">
                     <User className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-medium text-gray-700">{user?.name || user?.email}</span>
+                    <span className="text-sm font-medium text-gray-700">
+                      {user?.name || user?.email}
+                    </span>
                   </div>
                   <button
                     onClick={handleLogout}
@@ -114,7 +139,11 @@ const Navbar = () => {
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="text-gray-700 hover:text-blue-600 p-2 rounded-lg hover:bg-blue-50 transition-all duration-200"
             >
-              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              {mobileMenuOpen ? (
+                <X className="h-6 w-6" />
+              ) : (
+                <Menu className="h-6 w-6" />
+              )}
             </button>
           </div>
         </div>
@@ -126,22 +155,30 @@ const Navbar = () => {
           <div className="px-2 pt-2 pb-3 space-y-1">
             {!isAuthenticated ? (
               <>
-                <Link 
-                  to="/" 
+                <Link
+                  to="/"
                   className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   Home
                 </Link>
-                <Link 
-                  to="/about" 
+                <Link
+                  to="/about"
                   className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   About
                 </Link>
-                <Link 
-                  to="/contact" 
+                <Link
+                  to="/communities"
+                  className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Communities</span>
+                </Link>
+                <Link
+                  to="/contact"
                   className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-200"
                   onClick={() => setMobileMenuOpen(false)}
                 >
@@ -164,15 +201,23 @@ const Navbar = () => {
               </>
             ) : (
               <>
-                <Link 
-                  to={getDashboardLink()} 
+                <Link
+                  to={getDashboardLink()}
                   className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
                   onClick={() => setMobileMenuOpen(false)}
                 >
                   <TrendingUp className="h-4 w-4" />
                   <span>Dashboard</span>
                 </Link>
-                {userType === 'citizen' && (
+                <Link
+                  to="/communities"
+                  className="block px-4 py-3 text-gray-700 hover:bg-blue-50 hover:text-blue-600 rounded-lg font-medium transition-all duration-200 flex items-center space-x-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Users className="h-4 w-4" />
+                  <span>Communities</span>
+                </Link>
+                {userType === "citizen" && (
                   <Link
                     to="/complaint/submit"
                     className="block px-4 py-3 bg-gradient-to-r from-green-500 to-emerald-600 text-white rounded-lg font-medium text-center shadow-lg mt-2"
@@ -183,7 +228,9 @@ const Navbar = () => {
                 )}
                 <div className="px-4 py-3 text-gray-700 flex items-center space-x-2 border-t border-gray-200 mt-2 pt-3">
                   <User className="h-5 w-5" />
-                  <span className="font-medium">{user?.name || user?.email}</span>
+                  <span className="font-medium">
+                    {user?.name || user?.email}
+                  </span>
                 </div>
                 <button
                   onClick={() => {

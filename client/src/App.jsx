@@ -6,6 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
+import { CommunityProvider } from "./context/CommunityContext";
 import ProtectedRoute from "./components/ProtectedRoute";
 import DashboardLayout from "./layouts/DashboardLayout";
 import Navbar from "./components/Navbar";
@@ -19,6 +20,10 @@ import "aos/dist/aos.css";
 import LandingPage from "./pages/LandingPage";
 import AboutPage from "./pages/AboutPage";
 import ContactPage from "./pages/ContactPage";
+
+// Community Pages
+import CommunityListPage from "./pages/community/CommunityListPage";
+import CommunityFeedPage from "./pages/community/CommunityFeedPage";
 
 // Citizen Pages
 import CitizenLogin from "./pages/citizen/CitizenLogin";
@@ -58,102 +63,120 @@ function App() {
 
   return (
     <AuthProvider>
-      <Router>
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
-          <Navbar />
-          <main className="flex-grow">
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<LandingPage />} />
-              <Route path="/about" element={<AboutPage />} />
-              <Route path="/contact" element={<ContactPage />} />
+      <CommunityProvider>
+        <Router>
+          <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
+            <Navbar />
+            <main className="flex-grow">
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<LandingPage />} />
+                <Route path="/about" element={<AboutPage />} />
+                <Route path="/contact" element={<ContactPage />} />
 
-              {/* Citizen Routes */}
-              <Route path="/citizen/login" element={<CitizenLogin />} />
-              <Route path="/citizen/register" element={<CitizenRegister />} />
-              <Route
-                path="/citizen/dashboard"
-                element={
-                  <ProtectedRoute allowedRoles={["citizen"]}>
-                    <CitizenDashboard />
-                  </ProtectedRoute>
-                }
-              />
-              <Route
-                path="/citizen/complaints/:id"
-                element={
-                  <ProtectedRoute allowedRoles={["citizen"]}>
-                    <CitizenComplaintDetail />
-                  </ProtectedRoute>
-                }
-              />
+                {/* Community Routes */}
+                <Route path="/communities" element={<CommunityListPage />} />
+                <Route
+                  path="/community/:id/feed"
+                  element={<CommunityFeedPage />}
+                />
 
-              {/* Complaint Routes */}
-              <Route path="/complaint/submit" element={<ComplaintSubmit />} />
-              <Route
-                path="/complaint/confirmation"
-                element={<ComplaintConfirmation />}
-              />
+                {/* Citizen Routes */}
+                <Route path="/citizen/login" element={<CitizenLogin />} />
+                <Route path="/citizen/register" element={<CitizenRegister />} />
+                <Route
+                  path="/citizen/dashboard"
+                  element={
+                    <ProtectedRoute allowedRoles={["citizen"]}>
+                      <CitizenDashboard />
+                    </ProtectedRoute>
+                  }
+                />
+                <Route
+                  path="/citizen/complaints/:id"
+                  element={
+                    <ProtectedRoute allowedRoles={["citizen"]}>
+                      <CitizenComplaintDetail />
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Authority Routes */}
-              <Route path="/authority/login" element={<AuthorityLogin />} />
-              <Route
-                path="/authority/*"
-                element={
-                  <ProtectedRoute allowedRoles={["authority"]}>
-                    <DashboardLayout>
-                      <Routes>
-                        <Route
-                          path="dashboard"
-                          element={<AuthorityDashboard />}
-                        />
-                        <Route
-                          path="complaints"
-                          element={<AuthorityComplaints />}
-                        />
-                        <Route
-                          path="complaints/:id"
-                          element={<ComplaintDetail />}
-                        />
-                      </Routes>
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }
-              />
+                {/* Complaint Routes */}
+                <Route path="/complaint/submit" element={<ComplaintSubmit />} />
+                <Route
+                  path="/complaint/confirmation"
+                  element={<ComplaintConfirmation />}
+                />
 
-              {/* Admin Routes */}
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route
-                path="/admin/*"
-                element={
-                  <ProtectedRoute allowedRoles={["admin"]}>
-                    <DashboardLayout>
-                      <Routes>
-                        <Route path="dashboard" element={<AdminDashboard />} />
-                        <Route
-                          path="complaints"
-                          element={<AdminAllComplaints />}
-                        />
-                        <Route
-                          path="authorities"
-                          element={<AdminManageAuthorities />}
-                        />
-                        <Route path="upload-csv" element={<AdminUploadCSV />} />
-                        <Route path="analytics" element={<AdminAnalytics />} />
-                      </Routes>
-                    </DashboardLayout>
-                  </ProtectedRoute>
-                }
-              />
+                {/* Authority Routes */}
+                <Route path="/authority/login" element={<AuthorityLogin />} />
+                <Route
+                  path="/authority/*"
+                  element={
+                    <ProtectedRoute allowedRoles={["authority"]}>
+                      <DashboardLayout>
+                        <Routes>
+                          <Route
+                            path="dashboard"
+                            element={<AuthorityDashboard />}
+                          />
+                          <Route
+                            path="complaints"
+                            element={<AuthorityComplaints />}
+                          />
+                          <Route
+                            path="complaints/:id"
+                            element={<ComplaintDetail />}
+                          />
+                        </Routes>
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  }
+                />
 
-              {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
-            </Routes>
-          </main>
-          <Footer />
-          <Toast />
-        </div>
-      </Router>
+                {/* Admin Routes */}
+                <Route path="/admin/login" element={<AdminLogin />} />
+                <Route
+                  path="/admin/*"
+                  element={
+                    <ProtectedRoute allowedRoles={["admin"]}>
+                      <DashboardLayout>
+                        <Routes>
+                          <Route
+                            path="dashboard"
+                            element={<AdminDashboard />}
+                          />
+                          <Route
+                            path="complaints"
+                            element={<AdminAllComplaints />}
+                          />
+                          <Route
+                            path="authorities"
+                            element={<AdminManageAuthorities />}
+                          />
+                          <Route
+                            path="upload-csv"
+                            element={<AdminUploadCSV />}
+                          />
+                          <Route
+                            path="analytics"
+                            element={<AdminAnalytics />}
+                          />
+                        </Routes>
+                      </DashboardLayout>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Fallback */}
+                <Route path="*" element={<Navigate to="/" replace />} />
+              </Routes>
+            </main>
+            <Footer />
+            <Toast />
+          </div>
+        </Router>
+      </CommunityProvider>
     </AuthProvider>
   );
 }
