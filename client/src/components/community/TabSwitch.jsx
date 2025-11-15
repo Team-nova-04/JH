@@ -2,7 +2,7 @@ import { useState } from "react";
 
 const TabSwitch = ({ tabs, activeTab, onTabChange }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-1 inline-flex">
+    <div className="inline-flex p-1 bg-white border border-gray-200 rounded-lg shadow-sm">
       {tabs.map((tab) => (
         <button
           key={tab.id}

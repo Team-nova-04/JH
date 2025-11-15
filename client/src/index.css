@@ -65,12 +65,12 @@ html {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: linear-gradient(to bottom, #3B82F6, #8B5CF6);
+  background: linear-gradient(to bottom, #ffe415, #d25400);
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(to bottom, #2563EB, #7C3AED);
+  background: linear-gradient(to bottom, #ffe415, #d25400);
 }
 
 /* Logout Modal Animations */
