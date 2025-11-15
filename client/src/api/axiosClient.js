@@ -3,9 +3,7 @@ import toast from "react-hot-toast";
 
 // Create axios instance with base configuration
 const axiosClient = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE_URL ||
-    "https://civicsense-khaq.onrender.com/api",
+  baseURL: "https://civicsense-khaq.onrender.com/api",
   headers: {
     "Content-Type": "application/json",
   },
