@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { authorityAPI } from '../../api/api';
+import { authorityAPI, complaintAPI } from '../../api/api';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import {
   MapPin,
@@ -34,6 +34,7 @@ const ComplaintDetail = () => {
   const [noteContent, setNoteContent] = useState('');
   const [addingNote, setAddingNote] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState(false);
+  const [requestingIdentity, setRequestingIdentity] = useState(false);
 
   useEffect(() => {
     fetchComplaint();
@@ -93,6 +94,20 @@ const ComplaintDetail = () => {
       alert(`Contact Information:\nName: ${contact.name}\nEmail: ${contact.email}\nPhone: ${contact.phone || 'N/A'}`);
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to request contact');
+    }
+  };
+
+  // FR2: Handle identity request for anonymous complaints
+  const handleRequestIdentity = async () => {
+    try {
+      setRequestingIdentity(true);
+      await complaintAPI.requestIdentity(id);
+      toast.success('Identity request sent to citizen');
+      fetchComplaint();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to request identity');
+    } finally {
+      setRequestingIdentity(false);
     }
   };
 
@@ -352,19 +367,102 @@ const ComplaintDetail = () => {
             </div>
           </div>
 
-          {/* Citizen Contact */}
-          {!complaint.anonymous && (
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Citizen Contact</h3>
-              <button
-                onClick={handleRequestContact}
-                className="w-full bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 flex items-center justify-center space-x-2"
-              >
-                <User className="h-4 w-4" />
-                <span>Request Contact Details</span>
-              </button>
-            </div>
-          )}
+          {/* Citizen Contact - FR2 */}
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <h3 className="text-lg font-semibold text-gray-900 mb-4">Citizen Information</h3>
+            
+            {complaint.anonymous ? (
+              <div className="space-y-4">
+                {/* Anonymous Status */}
+                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-2">
+                    <User className="h-5 w-5 text-yellow-600" />
+                    <span className="font-medium text-yellow-900">Anonymous User</span>
+                  </div>
+                  <p className="text-sm text-yellow-800">
+                    {complaint.identityRequested && !complaint.identityApproved
+                      ? "Identity request sent to citizen. Waiting for approval..."
+                      : complaint.identityApproved && complaint.revealedUser
+                      ? "Identity approved and revealed below"
+                      : "Identity available upon request"}
+                  </p>
+                </div>
+
+                {/* Request Identity Button */}
+                {!complaint.identityRequested && !complaint.identityApproved && (
+                  <button
+                    onClick={handleRequestIdentity}
+                    disabled={requestingIdentity}
+                    className="w-full bg-primary-600 text-white px-4 py-2 rounded-lg hover:bg-primary-700 flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <User className="h-4 w-4" />
+                    <span>{requestingIdentity ? 'Requesting...' : 'Request Identity'}</span>
+                  </button>
+                )}
+
+                {/* Revealed Identity (if approved) */}
+                {complaint.identityApproved && complaint.revealedUser && (
+                  <div className="p-4 bg-green-50 border border-green-200 rounded-lg space-y-2">
+                    <p className="font-medium text-green-900 mb-3">Revealed Identity:</p>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center space-x-2">
+                        <User className="h-4 w-4 text-gray-400" />
+                        <span className="text-gray-700">
+                          <span className="font-medium">Name:</span> {complaint.revealedUser.name}
+                        </span>
+                      </div>
+                      {complaint.revealedUser.email && (
+                        <div className="flex items-center space-x-2">
+                          <Mail className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-700">
+                            <span className="font-medium">Email:</span> {complaint.revealedUser.email}
+                          </span>
+                        </div>
+                      )}
+                      {complaint.revealedUser.phone && (
+                        <div className="flex items-center space-x-2">
+                          <Phone className="h-4 w-4 text-gray-400" />
+                          <span className="text-gray-700">
+                            <span className="font-medium">Phone:</span> {complaint.revealedUser.phone}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {complaint.name && (
+                  <div className="flex items-center space-x-2">
+                    <User className="h-5 w-5 text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-600">Name</p>
+                      <p className="font-medium text-gray-900">{complaint.name}</p>
+                    </div>
+                  </div>
+                )}
+                {complaint.email && (
+                  <div className="flex items-center space-x-2">
+                    <Mail className="h-5 w-5 text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-600">Email</p>
+                      <p className="font-medium text-gray-900">{complaint.email}</p>
+                    </div>
+                  </div>
+                )}
+                {complaint.phone && (
+                  <div className="flex items-center space-x-2">
+                    <Phone className="h-5 w-5 text-gray-400" />
+                    <div>
+                      <p className="text-sm text-gray-600">Phone</p>
+                      <p className="font-medium text-gray-900">{complaint.phone}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           {/* Metadata */}
           <div className="bg-white rounded-lg shadow-sm p-6">

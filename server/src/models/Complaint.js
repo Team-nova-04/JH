@@ -163,6 +163,39 @@ const complaintSchema = new mongoose.Schema(
       },
     },
 
+    // Identity request system for anonymous complaints (FR2)
+    identityRequested: {
+      type: Boolean,
+      default: false,
+    },
+    identityApproved: {
+      type: Boolean,
+      default: false,
+    },
+    revealedUser: {
+      name: {
+        type: String,
+        default: null,
+      },
+      phone: {
+        type: String,
+        default: null,
+      },
+      email: {
+        type: String,
+        default: null,
+      },
+    },
+    identityRequestedBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Authority",
+      default: null,
+    },
+    identityRequestedAt: {
+      type: Date,
+      default: null,
+    },
+
     // Metadata
     submittedAt: {
       type: Date,

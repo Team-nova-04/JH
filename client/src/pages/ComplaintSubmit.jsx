@@ -1,15 +1,26 @@
-import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { complaintSchema } from '../utils/validations';
-import { useAuth } from '../context/AuthContext';
-import { complaintAPI } from '../api/api';
-import { COMPLAINT_CATEGORIES } from '../utils/constants';
-import { Upload, AlertCircle, MapPin, Folder, MessageSquare, User, Phone } from 'lucide-react';
-import toast from 'react-hot-toast';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { complaintSchema } from "../utils/validations";
+import { useAuth } from "../context/AuthContext";
+import { complaintAPI } from "../api/api";
+import {
+  COMPLAINT_CATEGORIES,
+  REQUIRES_IDENTIFICATION_CATEGORIES,
+} from "../utils/constants";
+import {
+  Upload,
+  AlertCircle,
+  MapPin,
+  Folder,
+  MessageSquare,
+  User,
+  Phone,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const ComplaintSubmit = () => {
   const navigate = useNavigate();
@@ -30,6 +41,7 @@ const ComplaintSubmit = () => {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(complaintSchema),
@@ -38,7 +50,23 @@ const ComplaintSubmit = () => {
     },
   });
 
-  const isAnonymous = watch('anonymous');
+  const isAnonymous = watch("anonymous");
+  const selectedCategory = watch("category");
+
+  // FR2: Check if selected category requires identification
+  const categoryRequiresIdentity =
+    selectedCategory &&
+    REQUIRES_IDENTIFICATION_CATEGORIES.includes(selectedCategory);
+
+  // FR2: Anonymous should be disabled if category requires identity
+  const anonymousDisabled = !isAuthenticated || categoryRequiresIdentity;
+
+  // FR2: Auto-disable anonymous when category requires identity
+  useEffect(() => {
+    if (categoryRequiresIdentity && isAnonymous) {
+      setValue("anonymous", false);
+    }
+  }, [categoryRequiresIdentity, isAnonymous, setValue]);
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -56,21 +84,32 @@ const ComplaintSubmit = () => {
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('description', data.description);
-      formData.append('location', data.location);
-      if (data.category) formData.append('category', data.category);
-      if (!isAnonymous && data.name) formData.append('name', data.name);
-      if (!isAnonymous && data.phone) formData.append('phone', data.phone);
-      if (imageFile) formData.append('image', imageFile);
+      formData.append("description", data.description);
+      formData.append("location", data.location);
+      formData.append("anonymous", isAnonymous ? "true" : "false");
+      if (data.category) formData.append("category", data.category);
+      if (!isAnonymous && data.name) formData.append("name", data.name);
+      if (!isAnonymous && data.phone) formData.append("phone", data.phone);
+      if (imageFile) formData.append("image", imageFile);
 
-      const res = await complaintAPI.submit(formData, {
-        headers: { 'Content-Type': 'multipart/form-data' },
+      const res = await complaintAPI.submit(formData);
+
+      // FR2: Show message from backend (may include Rule D message)
+      const message = res.data?.message || "Complaint submitted successfully!";
+      if (message.includes("Category requires identification")) {
+        toast.success(message, { duration: 5000 });
+      } else {
+        toast.success(message);
+      }
+
+      navigate("/complaint/confirmation", {
+        state: { complaint: res.data.data.complaint },
       });
-
-      toast.success('Complaint submitted successfully!');
-      navigate('/complaint/confirmation', { state: { complaint: res.data.data.complaint } });
     } catch (error) {
-      toast.error(error.response?.data?.message || 'Failed to submit complaint');
+      // FR2: Show error message from backend
+      const errorMessage =
+        error.response?.data?.message || "Failed to submit complaint";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -89,8 +128,10 @@ const ComplaintSubmit = () => {
               height: `${Math.random() * 200 + 100}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              background: `radial-gradient(circle, ${i % 2 === 0 ? '#FEF3C7' : '#FDE68A'}30, transparent)`,
-              filter: 'blur(30px)',
+              background: `radial-gradient(circle, ${
+                i % 2 === 0 ? "#FEF3C7" : "#FDE68A"
+              }30, transparent)`,
+              filter: "blur(30px)",
             }}
           />
         ))}
@@ -113,34 +154,62 @@ const ComplaintSubmit = () => {
         </div>
 
         {/* Form Container */}
-        <div 
+        <div
           className="p-8 border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl"
           data-aos="fade-up"
           data-aos-delay="100"
         >
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
-            {/* Anonymous Toggle */}
-            {isAuthenticated && (
-              <div 
-                className="flex items-center p-4 space-x-3 border bg-white/50 rounded-xl border-white/60"
+            {/* Anonymous Toggle - FR2 */}
+            {!isAuthenticated ? (
+              <div
+                className="p-4 border bg-yellow-50 rounded-xl border-yellow-200"
                 data-aos="fade-right"
                 data-aos-delay="200"
               >
-                <input
-                  {...register('anonymous')}
-                  type="checkbox"
-                  id="anonymous"
-                  className="h-5 w-5 text-[#8D153A] focus:ring-[#8D153A] border-gray-300 rounded"
-                />
-                <label htmlFor="anonymous" className="text-sm font-medium text-gray-700">
-                  Submit anonymously
-                </label>
+                <p className="text-sm font-medium text-yellow-800">
+                  <AlertCircle className="inline w-4 h-4 mr-2" />
+                  Login required to submit anonymously.
+                </p>
+              </div>
+            ) : (
+              <div
+                className="p-4 space-y-3 border bg-white/50 rounded-xl border-white/60"
+                data-aos="fade-right"
+                data-aos-delay="200"
+              >
+                <div className="flex items-center space-x-3">
+                  <input
+                    {...register("anonymous")}
+                    type="checkbox"
+                    id="anonymous"
+                    disabled={anonymousDisabled}
+                    className="h-5 w-5 text-[#8D153A] focus:ring-[#8D153A] border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                  />
+                  <label
+                    htmlFor="anonymous"
+                    className={`text-sm font-medium ${
+                      anonymousDisabled ? "text-gray-400" : "text-gray-700"
+                    }`}
+                  >
+                    Submit anonymously
+                  </label>
+                </div>
+                {categoryRequiresIdentity && (
+                  <div className="ml-8 p-3 bg-red-50 border border-red-200 rounded-lg">
+                    <p className="text-sm font-medium text-red-800">
+                      <AlertCircle className="inline w-4 h-4 mr-2" />
+                      This category requires identification. Anonymous mode
+                      disabled.
+                    </p>
+                  </div>
+                )}
               </div>
             )}
 
             {/* Name and Phone (if not anonymous) */}
             {!isAnonymous && (
-              <div 
+              <div
                 className="grid grid-cols-1 gap-6 md:grid-cols-2"
                 data-aos="fade-up"
                 data-aos-delay="300"
@@ -151,7 +220,7 @@ const ComplaintSubmit = () => {
                     Your Name (Optional)
                   </label>
                   <input
-                    {...register('name')}
+                    {...register("name")}
                     type="text"
                     className="w-full px-4 py-3 bg-white/70 border border-white/60 rounded-xl focus:ring-2 focus:ring-[#8D153A] focus:border-transparent transition-all duration-300"
                     placeholder="John Doe"
@@ -163,7 +232,7 @@ const ComplaintSubmit = () => {
                     Phone Number (Optional)
                   </label>
                   <input
-                    {...register('phone')}
+                    {...register("phone")}
                     type="tel"
                     className="w-full px-4 py-3 bg-white/70 border border-white/60 rounded-xl focus:ring-2 focus:ring-[#8D153A] focus:border-transparent transition-all duration-300"
                     placeholder="+1234567890"
@@ -179,15 +248,17 @@ const ComplaintSubmit = () => {
                 Location <span className="ml-1 text-red-500">*</span>
               </label>
               <input
-                {...register('location')}
+                {...register("location")}
                 type="text"
                 className={`w-full px-4 py-3 bg-white/70 border rounded-xl focus:ring-2 focus:ring-[#8D153A] focus:border-transparent transition-all duration-300 ${
-                  errors.location ? 'border-red-300' : 'border-white/60'
+                  errors.location ? "border-red-300" : "border-white/60"
                 }`}
                 placeholder="Street address, area, city..."
               />
               {errors.location && (
-                <p className="mt-2 text-sm font-medium text-red-600">{errors.location.message}</p>
+                <p className="mt-2 text-sm font-medium text-red-600">
+                  {errors.location.message}
+                </p>
               )}
             </div>
 
@@ -198,13 +269,14 @@ const ComplaintSubmit = () => {
                 Category (Optional - AI will auto-detect)
               </label>
               <select
-                {...register('category')}
+                {...register("category")}
                 className="w-full px-4 py-3 bg-white/70 border border-white/60 rounded-xl focus:ring-2 focus:ring-[#8D153A] focus:border-transparent transition-all duration-300"
               >
                 <option value="">Auto-detect category</option>
                 {COMPLAINT_CATEGORIES.map((cat) => (
                   <option key={cat} value={cat}>
-                    {cat.charAt(0).toUpperCase() + cat.slice(1).replace('_', ' ')}
+                    {cat.charAt(0).toUpperCase() +
+                      cat.slice(1).replace("_", " ")}
                   </option>
                 ))}
               </select>
@@ -217,17 +289,21 @@ const ComplaintSubmit = () => {
                 Description <span className="ml-1 text-red-500">*</span>
               </label>
               <textarea
-                {...register('description')}
+                {...register("description")}
                 rows={6}
                 className={`w-full px-4 py-3 bg-white/70 border rounded-xl focus:ring-2 focus:ring-[#8D153A] focus:border-transparent transition-all duration-300 ${
-                  errors.description ? 'border-red-300' : 'border-white/60'
+                  errors.description ? "border-red-300" : "border-white/60"
                 }`}
                 placeholder="Describe your complaint in detail. Be specific about the issue, when it occurred, and any other relevant information..."
               />
               {errors.description && (
-                <p className="mt-2 text-sm font-medium text-red-600">{errors.description.message}</p>
+                <p className="mt-2 text-sm font-medium text-red-600">
+                  {errors.description.message}
+                </p>
               )}
-              <p className="mt-2 text-xs font-medium text-gray-600">Minimum 10 characters required</p>
+              <p className="mt-2 text-xs font-medium text-gray-600">
+                Minimum 10 characters required
+              </p>
             </div>
 
             {/* Image Upload */}
@@ -240,10 +316,10 @@ const ComplaintSubmit = () => {
                 <div className="space-y-3 text-center">
                   {imagePreview ? (
                     <div className="space-y-4">
-                      <img 
-                        src={imagePreview} 
-                        alt="Preview" 
-                        className="object-cover h-40 mx-auto shadow-lg rounded-xl" 
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="object-cover h-40 mx-auto shadow-lg rounded-xl"
                       />
                       <button
                         type="button"
@@ -271,7 +347,9 @@ const ComplaintSubmit = () => {
                         </label>
                         <p className="text-gray-600">or drag and drop</p>
                       </div>
-                      <p className="text-xs font-medium text-gray-500">PNG, JPG, GIF up to 5MB</p>
+                      <p className="text-xs font-medium text-gray-500">
+                        PNG, JPG, GIF up to 5MB
+                      </p>
                     </>
                   )}
                 </div>
@@ -279,7 +357,7 @@ const ComplaintSubmit = () => {
             </div>
 
             {/* Info Alert */}
-            <div 
+            <div
               className="bg-[#00534E]/10 border border-[#00534E]/20 rounded-2xl p-6"
               data-aos="fade-up"
               data-aos-delay="800"
@@ -287,15 +365,19 @@ const ComplaintSubmit = () => {
               <div className="flex items-start space-x-4">
                 <AlertCircle className="h-6 w-6 text-[#00534E] flex-shrink-0 mt-0.5" />
                 <div className="text-gray-700">
-                  <p className="font-semibold text-lg mb-2 text-[#00534E]">How it works:</p>
+                  <p className="font-semibold text-lg mb-2 text-[#00534E]">
+                    How it works:
+                  </p>
                   <ul className="space-y-2">
                     <li className="flex items-start">
                       <span className="text-[#8D153A] font-bold mr-2">•</span>
-                      Your complaint will be analyzed by AI for category and urgency
+                      Your complaint will be analyzed by AI for category and
+                      urgency
                     </li>
                     <li className="flex items-start">
                       <span className="text-[#8D153A] font-bold mr-2">•</span>
-                      It will be automatically routed to the appropriate authority
+                      It will be automatically routed to the appropriate
+                      authority
                     </li>
                     <li className="flex items-start">
                       <span className="text-[#8D153A] font-bold mr-2">•</span>
@@ -319,7 +401,7 @@ const ComplaintSubmit = () => {
                     <span>Submitting Complaint...</span>
                   </div>
                 ) : (
-                  'Submit Complaint'
+                  "Submit Complaint"
                 )}
               </button>
             </div>
