@@ -77,53 +77,53 @@ const AdminAnalytics = () => {
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold text-gray-900">Analytics Dashboard</h1>
-        <p className="text-gray-600 mt-1">Comprehensive insights and statistics</p>
+        <p className="mt-1 text-gray-600">Comprehensive insights and statistics</p>
       </div>
 
       {/* Urgent Stats Cards */}
       {urgentStats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-sm p-6">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
+          <div className="p-6 bg-white rounded-lg shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Critical Complaints</p>
-                <p className="text-2xl font-bold text-red-600 mt-1">
+                <p className="mt-1 text-2xl font-bold text-red-600">
                   {urgentStats.critical || 0}
                 </p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-red-500" />
+              <AlertTriangle className="w-8 h-8 text-red-500" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="p-6 bg-white rounded-lg shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Urgent Complaints</p>
-                <p className="text-2xl font-bold text-orange-600 mt-1">
+                <p className="mt-1 text-2xl font-bold text-orange-600">
                   {urgentStats.urgent || 0}
                 </p>
               </div>
-              <AlertTriangle className="h-8 w-8 text-orange-500" />
+              <AlertTriangle className="w-8 h-8 text-orange-500" />
             </div>
           </div>
-          <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="p-6 bg-white rounded-lg shadow-sm">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-600">Total Urgent</p>
-                <p className="text-2xl font-bold text-purple-600 mt-1">
+                <p className="mt-1 text-2xl font-bold text-purple-600">
                   {(urgentStats.critical || 0) + (urgentStats.urgent || 0)}
                 </p>
               </div>
-              <TrendingUp className="h-8 w-8 text-purple-500" />
+              <TrendingUp className="w-8 h-8 text-purple-500" />
             </div>
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Category Distribution */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-            <BarChart3 className="h-5 w-5 mr-2" />
+        <div className="p-6 bg-white rounded-lg shadow-sm">
+          <h2 className="flex items-center mb-4 text-xl font-semibold text-gray-900">
+            <BarChart3 className="w-5 h-5 mr-2" />
             Complaints by Category
           </h2>
           {categoryStats.length > 0 ? (
@@ -147,13 +147,13 @@ const AdminAnalytics = () => {
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="text-center py-12 text-gray-500">No data available</div>
+            <div className="py-12 text-center text-gray-500">No data available</div>
           )}
         </div>
 
         {/* Category Bar Chart */}
-        <div className="bg-white rounded-lg shadow-sm p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Category Breakdown</h2>
+        <div className="p-6 bg-white rounded-lg shadow-sm">
+          <h2 className="mb-4 text-xl font-semibold text-gray-900">Category Breakdown</h2>
           {categoryStats.length > 0 ? (
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={categoryStats}>
@@ -165,15 +165,15 @@ const AdminAnalytics = () => {
               </BarChart>
             </ResponsiveContainer>
           ) : (
-            <div className="text-center py-12 text-gray-500">No data available</div>
+            <div className="py-12 text-center text-gray-500">No data available</div>
           )}
         </div>
       </div>
 
       {/* Location Stats */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <MapPin className="h-5 w-5 mr-2" />
+      <div className="p-6 bg-white rounded-lg shadow-sm">
+        <h2 className="flex items-center mb-4 text-xl font-semibold text-gray-900">
+          <MapPin className="w-5 h-5 mr-2" />
           Top Locations (Last 7 Days)
         </h2>
         {locationStats.length > 0 ? (
@@ -187,14 +187,14 @@ const AdminAnalytics = () => {
             </BarChart>
           </ResponsiveContainer>
         ) : (
-          <div className="text-center py-12 text-gray-500">No data available</div>
+          <div className="py-12 text-center text-gray-500">No data available</div>
         )}
       </div>
 
       {/* Trends */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center">
-          <TrendingUp className="h-5 w-5 mr-2" />
+      <div className="p-6 bg-white rounded-lg shadow-sm">
+        <h2 className="flex items-center mb-4 text-xl font-semibold text-gray-900">
+          <TrendingUp className="w-5 h-5 mr-2" />
           Complaint Trends (Last 7 Days)
         </h2>
         {trends.length > 0 ? (
@@ -209,7 +209,7 @@ const AdminAnalytics = () => {
             </LineChart>
           </ResponsiveContainer>
         ) : (
-          <div className="text-center py-12 text-gray-500">No data available</div>
+          <div className="py-12 text-center text-gray-500">No data available</div>
         )}
       </div>
     </div>
