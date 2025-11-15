@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { useCommunity } from "../../context/CommunityContext";
+import { useAuth } from "../../context/AuthContext";
 import AnnouncementCard from "../../components/community/AnnouncementCard";
 import CommunityComplaintCard from "../../components/community/CommunityComplaintCard";
 import TabSwitch from "../../components/community/TabSwitch";
@@ -13,10 +14,12 @@ import {
   TrendingUp,
 } from "lucide-react";
 import AOS from "aos";
+import toast from "react-hot-toast";
 
 const CommunityFeedPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { isAuthenticated, isCitizen } = useAuth();
   const {
     getCommunityById,
     getAnnouncementsByCommunity,
@@ -34,12 +37,37 @@ const CommunityFeedPage = () => {
     AOS.refresh();
   }, [activeTab]);
 
-  // Redirect if not joined
+  // Redirect if not authenticated or not a citizen
   useEffect(() => {
+    if (!isAuthenticated) {
+      toast.error("Please login to access community feeds");
+      navigate("/citizen/login", {
+        state: {
+          from: `/community/${id}/feed`,
+          message: "Please login to access community feeds",
+        },
+      });
+      return;
+    }
+
+    if (!isCitizen) {
+      toast.error("Only citizens can access community feeds");
+      navigate("/communities");
+      return;
+    }
+
+    // Redirect if not joined
     if (!hasJoined(id)) {
+      toast("Please join the community first", {
+        icon: "ℹ️",
+        style: {
+          background: "#3B82F6",
+          color: "#fff",
+        },
+      });
       navigate("/communities");
     }
-  }, [id, hasJoined, navigate]);
+  }, [id, hasJoined, navigate, isAuthenticated, isCitizen]);
 
   if (!community) {
     return (

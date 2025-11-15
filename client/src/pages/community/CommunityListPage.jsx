@@ -1,13 +1,25 @@
 import { useEffect } from "react";
 import { useCommunity } from "../../context/CommunityContext";
-import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import CommunityCard from "../../components/community/CommunityCard";
-import { Users, Search, TrendingUp, MapPin, MessageSquare, Heart } from "lucide-react";
+import {
+  Users,
+  Search,
+  TrendingUp,
+  LogIn,
+  AlertCircle,
+  MapPin,
+  MessageSquare,
+  Heart,
+} from "lucide-react";
 import AOS from "aos";
-import 'aos/dist/aos.css';
+import "aos/dist/aos.css";
 
 const CommunityListPage = () => {
   const { communities, joinedCommunities } = useCommunity();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Initialize AOS
@@ -34,8 +46,10 @@ const CommunityListPage = () => {
               height: `${Math.random() * 200 + 100}px`,
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              background: `radial-gradient(circle, ${i % 2 === 0 ? '#FEF3C7' : '#FDE68A'}30, transparent)`,
-              filter: 'blur(30px)',
+              background: `radial-gradient(circle, ${
+                i % 2 === 0 ? "#FEF3C7" : "#FDE68A"
+              }30, transparent)`,
+              filter: "blur(30px)",
             }}
           />
         ))}
@@ -43,7 +57,11 @@ const CommunityListPage = () => {
 
       <div className="relative z-10 mx-auto max-w-7xl">
         {/* Header Section */}
-        <div className="mb-16 text-center" data-aos="fade-down" data-aos-delay="100">
+        <div
+          className="mb-16 text-center"
+          data-aos="fade-down"
+          data-aos-delay="100"
+        >
           <div className="flex justify-center mb-6">
             <div className="relative">
               <div className="absolute -inset-4 bg-gradient-to-r from-[#FDE68A] to-[#FCD34D] rounded-full blur-xl opacity-60"></div>
@@ -61,16 +79,62 @@ const CommunityListPage = () => {
           </p>
         </div>
 
+        {/* Login Banner for Unauthenticated Users */}
+        {!isAuthenticated && (
+          <div className="mb-8" data-aos="fade-up">
+            <div className="bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl shadow-lg overflow-hidden">
+              <div className="px-6 py-8 sm:px-8 sm:py-10">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-start gap-4 text-white">
+                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                      <AlertCircle className="h-8 w-8" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold mb-2">
+                        Login Required to Join Communities
+                      </h3>
+                      <p className="text-green-50 text-lg">
+                        Sign in to your citizen account to join communities,
+                        participate in discussions, and stay updated with local
+                        announcements.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/citizen/login"
+                    state={{
+                      from: "/communities",
+                      message: "Please login to join communities",
+                    }}
+                    className="flex items-center gap-2 px-8 py-4 bg-white text-green-700 rounded-xl font-bold hover:bg-green-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 whitespace-nowrap"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    Login to Continue
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Stats Section */}
-        <div className="grid grid-cols-1 gap-8 mb-12 md:grid-cols-3" data-aos="fade-up" data-aos-delay="200">
+        <div
+          className="grid grid-cols-1 gap-8 mb-12 md:grid-cols-3"
+          data-aos="fade-up"
+          data-aos-delay="200"
+        >
           <div className="p-6 border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl">
             <div className="flex items-center space-x-4">
               <div className="bg-gradient-to-br from-[#8D153A] to-[#A52D5A] p-3 rounded-2xl shadow-lg">
                 <Users className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-3xl font-bold text-gray-900">{communities.length}</p>
-                <p className="text-sm font-semibold text-gray-600">Total Communities</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {communities.length}
+                </p>
+                <p className="text-sm font-semibold text-gray-600">
+                  Total Communities
+                </p>
               </div>
             </div>
           </div>
@@ -81,8 +145,12 @@ const CommunityListPage = () => {
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <div>
-                <p className="text-3xl font-bold text-gray-900">{joinedCommunities.length}</p>
-                <p className="text-sm font-semibold text-gray-600">Joined Communities</p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {joinedCommunities.length}
+                </p>
+                <p className="text-sm font-semibold text-gray-600">
+                  Joined Communities
+                </p>
               </div>
             </div>
           </div>
@@ -96,7 +164,9 @@ const CommunityListPage = () => {
                 <p className="text-3xl font-bold text-gray-900">
                   {communities.reduce((sum, c) => sum + c.activeIssues, 0)}
                 </p>
-                <p className="text-sm font-semibold text-gray-600">Active Issues</p>
+                <p className="text-sm font-semibold text-gray-600">
+                  Active Issues
+                </p>
               </div>
             </div>
           </div>
@@ -107,8 +177,12 @@ const CommunityListPage = () => {
           <div className="mb-12" data-aos="fade-up" data-aos-delay="300">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h2 className="mb-2 text-3xl font-bold text-gray-800">My Communities</h2>
-                <p className="text-gray-700">Communities you're actively participating in</p>
+                <h2 className="mb-2 text-3xl font-bold text-gray-800">
+                  My Communities
+                </h2>
+                <p className="text-gray-700">
+                  Communities you're actively participating in
+                </p>
               </div>
               <span className="px-4 py-2 bg-gradient-to-r from-[#8D153A] to-[#00534E] text-white rounded-full text-sm font-semibold shadow-lg">
                 {joinedCommunities.length} joined
@@ -118,7 +192,12 @@ const CommunityListPage = () => {
               {communities
                 .filter((community) => joinedCommunities.includes(community.id))
                 .map((community, index) => (
-                  <div key={community.id} className="relative" data-aos="zoom-in" data-aos-delay={400 + (index * 100)}>
+                  <div
+                    key={community.id}
+                    className="relative"
+                    data-aos="zoom-in"
+                    data-aos-delay={400 + index * 100}
+                  >
                     <CommunityCard community={community} />
                     <Link
                       to={`/community/${community.id}/feed`}
@@ -148,13 +227,21 @@ const CommunityListPage = () => {
               </p>
             </div>
           </div>
-          
-          {communities.filter((community) => !joinedCommunities.includes(community.id)).length > 0 ? (
+
+          {communities.filter(
+            (community) => !joinedCommunities.includes(community.id)
+          ).length > 0 ? (
             <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {communities
-                .filter((community) => !joinedCommunities.includes(community.id))
+                .filter(
+                  (community) => !joinedCommunities.includes(community.id)
+                )
                 .map((community, index) => (
-                  <div key={community.id} data-aos="zoom-in" data-aos-delay={600 + (index * 100)}>
+                  <div
+                    key={community.id}
+                    data-aos="zoom-in"
+                    data-aos-delay={600 + index * 100}
+                  >
                     <CommunityCard community={community} />
                   </div>
                 ))}
@@ -162,9 +249,12 @@ const CommunityListPage = () => {
           ) : (
             <div className="py-12 text-center border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl">
               <MapPin className="w-16 h-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="mb-3 text-2xl font-bold text-gray-800">You've Joined All Communities!</h3>
+              <h3 className="mb-3 text-2xl font-bold text-gray-800">
+                You've Joined All Communities!
+              </h3>
               <p className="mb-6 text-lg text-gray-700">
-                You're now connected to all available communities. Stay active and engage with your neighbors.
+                You're now connected to all available communities. Stay active
+                and engage with your neighbors.
               </p>
               <div className="flex items-center justify-center space-x-4 text-sm text-gray-600">
                 <div className="flex items-center space-x-2">
@@ -186,14 +276,24 @@ const CommunityListPage = () => {
 
         {/* Empty State - No Communities Available */}
         {communities.length === 0 && (
-          <div className="py-16 text-center border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl" data-aos="fade-up" data-aos-delay="600">
+          <div
+            className="py-16 text-center border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl"
+            data-aos="fade-up"
+            data-aos-delay="600"
+          >
             <Users className="w-20 h-20 mx-auto mb-6 text-gray-400" />
-            <h3 className="mb-3 text-2xl font-bold text-gray-800">No Communities Available Yet</h3>
+            <h3 className="mb-3 text-2xl font-bold text-gray-800">
+              No Communities Available Yet
+            </h3>
             <p className="max-w-2xl mx-auto mb-6 text-lg text-gray-700">
-              We're working on setting up communities in your area. Check back soon to connect with your neighbors and stay updated on local matters.
+              We're working on setting up communities in your area. Check back
+              soon to connect with your neighbors and stay updated on local
+              matters.
             </p>
             <div className="max-w-md p-6 mx-auto border bg-white/40 rounded-2xl border-white/60">
-              <h4 className="mb-3 font-semibold text-gray-800">What to expect:</h4>
+              <h4 className="mb-3 font-semibold text-gray-800">
+                What to expect:
+              </h4>
               <ul className="space-y-2 text-left text-gray-700">
                 <li className="flex items-center space-x-2">
                   <div className="bg-[#8D153A] rounded-full w-2 h-2"></div>
@@ -214,29 +314,41 @@ const CommunityListPage = () => {
 
         {/* Community Benefits Section */}
         {communities.length > 0 && (
-          <div className="mt-16 bg-gradient-to-r from-[#8D153A] to-[#00534E] rounded-3xl shadow-2xl p-8 text-white" data-aos="zoom-in" data-aos-delay="700">
-            <h2 className="mb-6 text-3xl font-bold text-center">Why Join Communities?</h2>
+          <div
+            className="mt-16 bg-gradient-to-r from-[#8D153A] to-[#00534E] rounded-3xl shadow-2xl p-8 text-white"
+            data-aos="zoom-in"
+            data-aos-delay="700"
+          >
+            <h2 className="mb-6 text-3xl font-bold text-center">
+              Why Join Communities?
+            </h2>
             <div className="grid grid-cols-1 gap-6 text-center md:grid-cols-3">
               <div>
                 <div className="flex items-center justify-center w-16 h-16 p-4 mx-auto mb-4 bg-white/20 rounded-2xl">
                   <MessageSquare className="h-8 w-8 text-[#FFBE29]" />
                 </div>
                 <h3 className="mb-2 text-lg font-bold">Stay Informed</h3>
-                <p className="text-sm text-white/90">Get real-time updates about your neighborhood and local issues</p>
+                <p className="text-sm text-white/90">
+                  Get real-time updates about your neighborhood and local issues
+                </p>
               </div>
               <div>
                 <div className="flex items-center justify-center w-16 h-16 p-4 mx-auto mb-4 bg-white/20 rounded-2xl">
                   <Users className="h-8 w-8 text-[#FFBE29]" />
                 </div>
                 <h3 className="mb-2 text-lg font-bold">Connect Locally</h3>
-                <p className="text-sm text-white/90">Build relationships with neighbors and local authorities</p>
+                <p className="text-sm text-white/90">
+                  Build relationships with neighbors and local authorities
+                </p>
               </div>
               <div>
                 <div className="flex items-center justify-center w-16 h-16 p-4 mx-auto mb-4 bg-white/20 rounded-2xl">
                   <Heart className="h-8 w-8 text-[#FFBE29]" />
                 </div>
                 <h3 className="mb-2 text-lg font-bold">Collaborate</h3>
-                <p className="text-sm text-white/90">Work together to solve community problems effectively</p>
+                <p className="text-sm text-white/90">
+                  Work together to solve community problems effectively
+                </p>
               </div>
             </div>
           </div>

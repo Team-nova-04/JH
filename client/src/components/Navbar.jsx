@@ -12,13 +12,20 @@ import {
   Users,
 } from "lucide-react";
 import { useState } from "react";
+import LogoutConfirmModal from "./LogoutConfirmModal";
 
 const Navbar = () => {
   const { isAuthenticated, userType, user, logout } = useAuth();
   const navigate = useNavigate();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
     logout();
     navigate("/");
   };
@@ -296,6 +303,14 @@ const Navbar = () => {
           </div>
         </div>
       )}
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        userName={user?.name || user?.email}
+      />
     </nav>
   );
 };
