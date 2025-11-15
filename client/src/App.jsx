@@ -50,6 +50,7 @@ import AdminUploadCSV from "./pages/admin/AdminUploadCSV";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminCommunityDashboard from "./pages/admin/AdminCommunityDashboard";
 import AdminCommunityManagement from "./pages/admin/AdminCommunityManagement";
+import AdminCommunityAnalytics from "./pages/admin/AdminCommunityAnalytics";
 
 // Citizen Pages
 import CitizenComplaintDetail from "./pages/citizen/CitizenComplaintDetail";
@@ -86,7 +87,9 @@ function App() {
   return (
     <AuthProvider>
       <CommunityProvider>
-        <Router>
+        <Router
+          future={{ v7_startTransition: true, v7_relativeSplatPath: true }}
+        >
           <div className="min-h-screen flex flex-col bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50">
             <AppLayout>
               <Routes>
@@ -190,6 +193,10 @@ function App() {
                           <Route
                             path="communities/:id/manage"
                             element={<AdminCommunityManagement />}
+                          />
+                          <Route
+                            path="communities/:id/analytics"
+                            element={<AdminCommunityAnalytics />}
                           />
                         </Routes>
                       </DashboardLayout>

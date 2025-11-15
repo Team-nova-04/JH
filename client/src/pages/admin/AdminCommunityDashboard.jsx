@@ -12,7 +12,7 @@ import {
   Settings,
   Shield,
   Target,
-  MessageSquare
+  MessageSquare,
 } from "lucide-react";
 
 const AdminCommunityDashboard = () => {
@@ -59,7 +59,8 @@ const AdminCommunityDashboard = () => {
             Community Management
           </h1>
           <p className="max-w-3xl mx-auto text-2xl leading-relaxed text-gray-700">
-            Monitor and manage communities, announcements, and local issues across Sri Lanka
+            Monitor and manage communities, announcements, and local issues
+            across Sri Lanka
           </p>
         </div>
 
@@ -77,7 +78,10 @@ const AdminCommunityDashboard = () => {
             </h3>
             <p className="text-sm font-semibold text-gray-600">Total Members</p>
             <div className="w-full h-2 mt-3 rounded-full bg-white/60">
-              <div className="bg-gradient-to-r from-[#8D153A] to-[#A52D5A] h-2 rounded-full" style={{ width: '100%' }}></div>
+              <div
+                className="bg-gradient-to-r from-[#8D153A] to-[#A52D5A] h-2 rounded-full"
+                style={{ width: "100%" }}
+              ></div>
             </div>
           </div>
 
@@ -93,7 +97,10 @@ const AdminCommunityDashboard = () => {
             </h3>
             <p className="text-sm font-semibold text-gray-600">Active Issues</p>
             <div className="w-full h-2 mt-3 rounded-full bg-white/60">
-              <div className="bg-gradient-to-r from-[#00534E] to-[#008080] h-2 rounded-full" style={{ width: '100%' }}></div>
+              <div
+                className="bg-gradient-to-r from-[#00534E] to-[#008080] h-2 rounded-full"
+                style={{ width: "100%" }}
+              ></div>
             </div>
           </div>
 
@@ -109,7 +116,10 @@ const AdminCommunityDashboard = () => {
             </h3>
             <p className="text-sm font-semibold text-gray-600">Announcements</p>
             <div className="w-full h-2 mt-3 rounded-full bg-white/60">
-              <div className="bg-gradient-to-r from-[#D97706] to-[#F59E0B] h-2 rounded-full" style={{ width: '100%' }}></div>
+              <div
+                className="bg-gradient-to-r from-[#D97706] to-[#F59E0B] h-2 rounded-full"
+                style={{ width: "100%" }}
+              ></div>
             </div>
           </div>
 
@@ -125,14 +135,19 @@ const AdminCommunityDashboard = () => {
             </h3>
             <p className="text-sm font-semibold text-gray-600">Total Upvotes</p>
             <div className="w-full h-2 mt-3 rounded-full bg-white/60">
-              <div className="bg-gradient-to-r from-[#059669] to-[#10B981] h-2 rounded-full" style={{ width: '100%' }}></div>
+              <div
+                className="bg-gradient-to-r from-[#059669] to-[#10B981] h-2 rounded-full"
+                style={{ width: "100%" }}
+              ></div>
             </div>
           </div>
         </div>
 
         {/* Platform Performance */}
         <div className="bg-gradient-to-r from-[#8D153A] to-[#00534E] rounded-3xl shadow-2xl p-8 text-white">
-          <h2 className="mb-6 text-3xl font-bold text-center">Platform Performance</h2>
+          <h2 className="mb-6 text-3xl font-bold text-center">
+            Platform Performance
+          </h2>
           <div className="grid grid-cols-1 gap-6 text-center md:grid-cols-3">
             <div>
               <div className="text-4xl font-bold text-[#FFBE29] mb-2">
@@ -142,7 +157,13 @@ const AdminCommunityDashboard = () => {
             </div>
             <div>
               <div className="text-4xl font-bold text-[#FFBE29] mb-2">
-                {((totalIssues > 0 ? complaints.filter(c => c.status === 'resolved').length / totalIssues : 0) * 100).toFixed(1)}%
+                {(
+                  (totalIssues > 0
+                    ? complaints.filter((c) => c.status === "resolved").length /
+                      totalIssues
+                    : 0) * 100
+                ).toFixed(1)}
+                %
               </div>
               <p className="text-white/90">Issue Resolution Rate</p>
             </div>
@@ -211,7 +232,9 @@ const AdminCommunityDashboard = () => {
                             </h3>
                             <div className="flex items-center space-x-3 text-white/90">
                               <MapPin className="w-5 h-5" />
-                              <span className="text-lg">{community.location}</span>
+                              <span className="text-lg">
+                                {community.location}
+                              </span>
                             </div>
                           </div>
                         </div>
@@ -219,13 +242,22 @@ const AdminCommunityDashboard = () => {
                           {community.description}
                         </p>
                       </div>
-                      <Link
-                        to={`/admin/communities/${community.id}/manage`}
-                        className="flex items-center px-6 py-3 space-x-2 font-bold text-white transition-all duration-300 border group bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 border-white/40"
-                      >
-                        <Settings className="w-5 h-5" />
-                        <span>Manage Community</span>
-                      </Link>
+                      <div className="flex flex-col gap-3 sm:flex-row">
+                        <Link
+                          to={`/admin/communities/${community.id}/analytics`}
+                          className="flex items-center px-6 py-3 space-x-2 font-bold text-white transition-all duration-300 border group bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 border-white/40"
+                        >
+                          <BarChart3 className="w-5 h-5" />
+                          <span>View Analytics</span>
+                        </Link>
+                        <Link
+                          to={`/admin/communities/${community.id}/manage`}
+                          className="flex items-center px-6 py-3 space-x-2 font-bold text-white transition-all duration-300 border group bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 border-white/40"
+                        >
+                          <Settings className="w-5 h-5" />
+                          <span>Manage Community</span>
+                        </Link>
+                      </div>
                     </div>
                   </div>
 
@@ -353,7 +385,8 @@ const AdminCommunityDashboard = () => {
                           No issues reported in this community yet
                         </p>
                         <p className="mt-1 text-sm text-gray-600">
-                          Community members are satisfied with their neighborhood
+                          Community members are satisfied with their
+                          neighborhood
                         </p>
                       </div>
                     )}

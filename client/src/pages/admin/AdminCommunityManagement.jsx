@@ -15,7 +15,8 @@ import {
   Save,
   Shield,
   MessageSquare,
-  Target
+  Target,
+  BarChart3,
 } from "lucide-react";
 
 const AdminCommunityManagement = () => {
@@ -257,19 +258,29 @@ const AdminCommunityManagement = () => {
             </button>
           </div>
 
-          {activeTab === "announcements" && (
-            <button
-              onClick={() => {
-                setShowAnnouncementForm(true);
-                setEditingAnnouncement(null);
-                resetForm();
-              }}
-              className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#8D153A] to-[#00534E] text-white rounded-xl font-bold hover:from-[#00534E] hover:to-[#8D153A] transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+          <div className="flex items-center space-x-3">
+            <Link
+              to={`/admin/communities/${id}/analytics`}
+              className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#059669] to-[#10B981] text-white rounded-xl font-bold hover:from-[#10B981] hover:to-[#059669] transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
             >
-              <Plus className="w-5 h-5" />
-              <span>Create Announcement</span>
-            </button>
-          )}
+              <BarChart3 className="w-5 h-5" />
+              <span>View Analytics</span>
+            </Link>
+
+            {activeTab === "announcements" && (
+              <button
+                onClick={() => {
+                  setShowAnnouncementForm(true);
+                  setEditingAnnouncement(null);
+                  resetForm();
+                }}
+                className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#8D153A] to-[#00534E] text-white rounded-xl font-bold hover:from-[#00534E] hover:to-[#8D153A] transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              >
+                <Plus className="w-5 h-5" />
+                <span>Create Announcement</span>
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Announcement Form Modal */}
@@ -406,7 +417,9 @@ const AdminCommunityManagement = () => {
                       className="group flex items-center space-x-2 px-6 py-3 bg-gradient-to-r from-[#8D153A] to-[#00534E] text-white rounded-xl font-bold hover:from-[#00534E] hover:to-[#8D153A] transition-all duration-500 shadow-lg hover:shadow-xl"
                     >
                       <Save className="w-5 h-5" />
-                      <span>{editingAnnouncement ? "Update" : "Create"} Announcement</span>
+                      <span>
+                        {editingAnnouncement ? "Update" : "Create"} Announcement
+                      </span>
                     </button>
                   </div>
                 </form>
@@ -515,7 +528,8 @@ const AdminCommunityManagement = () => {
                     No Announcements Yet
                   </h3>
                   <p className="max-w-md mx-auto mb-6 text-lg text-gray-700">
-                    Create your first announcement to keep the community informed and engaged.
+                    Create your first announcement to keep the community
+                    informed and engaged.
                   </p>
                   <button
                     onClick={() => {
@@ -611,7 +625,7 @@ const AdminCommunityManagement = () => {
                     No Issues Reported
                   </h3>
                   <p className="max-w-md mx-auto text-lg text-gray-700">
-                    Excellent! This community currently has no reported issues. 
+                    Excellent! This community currently has no reported issues.
                     The community members are satisfied with their neighborhood.
                   </p>
                 </div>
