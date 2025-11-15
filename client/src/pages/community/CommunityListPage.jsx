@@ -1,12 +1,15 @@
 import { useEffect } from "react";
 import { useCommunity } from "../../context/CommunityContext";
-import { Link } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
+import { Link, useNavigate } from "react-router-dom";
 import CommunityCard from "../../components/community/CommunityCard";
-import { Users, Search, TrendingUp } from "lucide-react";
+import { Users, Search, TrendingUp, LogIn, AlertCircle } from "lucide-react";
 import AOS from "aos";
 
 const CommunityListPage = () => {
   const { communities, joinedCommunities } = useCommunity();
+  const { isAuthenticated } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     AOS.refresh();
@@ -30,6 +33,42 @@ const CommunityListPage = () => {
             and collaborate on solving neighborhood issues.
           </p>
         </div>
+
+        {/* Login Banner for Unauthenticated Users */}
+        {!isAuthenticated && (
+          <div className="mb-8" data-aos="fade-up">
+            <div className="bg-gradient-to-r from-green-600 to-teal-600 rounded-2xl shadow-lg overflow-hidden">
+              <div className="px-6 py-8 sm:px-8 sm:py-10">
+                <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-start gap-4 text-white">
+                    <div className="p-3 bg-white/20 rounded-xl backdrop-blur-sm">
+                      <AlertCircle className="h-8 w-8" />
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-2xl font-bold mb-2">
+                        Login Required to Join Communities
+                      </h3>
+                      <p className="text-green-50 text-lg">
+                        Sign in to your citizen account to join communities, participate in discussions, and stay updated with local announcements.
+                      </p>
+                    </div>
+                  </div>
+                  <Link
+                    to="/citizen/login"
+                    state={{ 
+                      from: '/communities', 
+                      message: 'Please login to join communities' 
+                    }}
+                    className="flex items-center gap-2 px-8 py-4 bg-white text-green-700 rounded-xl font-bold hover:bg-green-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 whitespace-nowrap"
+                  >
+                    <LogIn className="h-5 w-5" />
+                    Login to Continue
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Stats Section */}
         <div

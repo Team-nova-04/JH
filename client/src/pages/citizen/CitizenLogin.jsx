@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { loginSchema } from '../../utils/validations';
@@ -11,8 +11,11 @@ import 'aos/dist/aos.css';
 
 const CitizenLogin = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { citizenLogin } = useAuth();
   const [loading, setLoading] = useState(false);
+  
+  const from = location.state?.from || '/citizen/dashboard';
 
   useEffect(() => {
     AOS.init({
@@ -36,7 +39,8 @@ const CitizenLogin = () => {
     setLoading(false);
 
     if (result.success) {
-      navigate('/citizen/dashboard');
+      // Redirect back to where user came from, or dashboard
+      navigate(from, { replace: true });
     } else {
       toast.error(result.error || 'Login failed');
     }
@@ -194,7 +198,7 @@ const CitizenLogin = () => {
       </div>
 
       {/* Custom CSS for animations */}
-      <style jsx>{`
+      <style>{`
         @keyframes float {
           0%, 100% {
             transform: translateY(0) translateX(0);
