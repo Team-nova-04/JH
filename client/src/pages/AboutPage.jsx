@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Shield, Target, Users, Zap, BarChart3, MapPin, MessageSquare, CheckCircle, Globe, Heart } from 'lucide-react';
+import { Shield, Target, Users, Zap, BarChart3, MapPin, MessageSquare, CheckCircle, Globe, Heart, Smartphone, Apple, Download } from 'lucide-react';
 import AOS from 'aos';
 import 'aos/dist/aos.css';
 
@@ -209,11 +209,99 @@ const AboutPage = () => {
             </div>
           </div>
 
+          {/* Mobile App Section */}
+          <div 
+            className="p-8 border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl"
+            data-aos="fade-up"
+            data-aos-delay="600"
+          >
+            <div className="flex flex-col items-center gap-8 lg:flex-row">
+              {/* Left Side - Phone Mockup */}
+              <div 
+                className="flex-1 text-center lg:text-left"
+                data-aos="fade-right"
+                data-aos-delay="700"
+              >
+                <div className="relative inline-block">
+                  <div className="absolute -inset-4 bg-gradient-to-r from-[#FDE68A] to-[#FCD34D] rounded-full blur-xl opacity-60"></div>
+                  <div className="relative bg-gradient-to-br from-[#8D153A] to-[#00534E] p-6 rounded-3xl shadow-2xl">
+                    <Smartphone className="w-24 h-24 text-white" />
+                  </div>
+                </div>
+                <h2 className="mt-6 text-3xl font-bold text-gray-800">Get the CivicSense Mobile App</h2>
+                <p className="mt-4 text-lg leading-relaxed text-gray-700">
+                  Take civic engagement with you wherever you go. Our mobile app makes it even easier to submit complaints, 
+                  track progress, and stay updated on community issues right from your smartphone.
+                </p>
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center space-x-3 text-gray-700">
+                    <Download className="w-5 h-5 text-[#8D153A]" />
+                    <span>Submit complaints on-the-go with photo uploads</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-gray-700">
+                    <Zap className="w-5 h-5 text-[#00534E]" />
+                    <span>Receive real-time notifications on complaint status</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-gray-700">
+                    <MapPin className="w-5 h-5 text-[#D97706]" />
+                    <span>Automatic location detection for faster submissions</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Right Side - App Store Buttons */}
+              <div 
+                className="flex-1 text-center lg:text-right"
+                data-aos="fade-left"
+                data-aos-delay="800"
+              >
+                <h3 className="mb-6 text-2xl font-bold text-gray-800">Download Now</h3>
+                <div className="flex flex-col gap-4 sm:flex-row sm:justify-center lg:justify-end">
+                  {/* App Store Button */}
+                  <a
+                    href="#"
+                    className="flex items-center justify-center gap-3 px-6 py-4 transition-all duration-300 transform bg-black rounded-2xl hover:bg-gray-900 hover:scale-105 hover:shadow-xl"
+                  >
+                    <Apple className="w-8 h-8 text-white" />
+                    <div className="text-left">
+                      <div className="text-xs text-white/80">Download on the</div>
+                      <div className="text-xl font-semibold text-white">App Store</div>
+                    </div>
+                  </a>
+
+                  {/* Google Play Button */}
+                  <a
+                    href="#"
+                    className="flex items-center justify-center gap-3 px-6 py-4 transition-all duration-300 transform bg-black rounded-2xl hover:bg-gray-900 hover:scale-105 hover:shadow-xl"
+                  >
+                    <svg className="w-8 h-8" viewBox="0 0 24 24" fill="currentColor">
+                      <path d="M3.609 1.814L13.792 12 3.61 22.186a.996.996 0 0 1-.61-.92V2.734a1 1 0 0 1 .609-.92zm10.89 10.893l2.302 2.302-10.937 6.333 8.635-8.635zm3.199-3.198l2.807 1.626a1 1 0 0 1 0 1.73l-2.808 1.626L12.683 12l4.015-4.293zM5.863 2.658l10.937 6.333-2.301 2.301-8.636-8.634z"/>
+                    </svg>
+                    <div className="text-left">
+                      <div className="text-xs text-white/80">Get it on</div>
+                      <div className="text-xl font-semibold text-white">Google Play</div>
+                    </div>
+                  </a>
+                </div>
+                
+                {/* QR Code Placeholder */}
+                <div className="mt-8">
+                  <div className="inline-block p-4 border bg-white/80 rounded-2xl border-white/60">
+                    <div className="w-32 h-32 bg-gradient-to-br from-[#8D153A] to-[#00534E] rounded-lg flex items-center justify-center">
+                      <Download className="w-12 h-12 text-white" />
+                    </div>
+                    <p className="mt-2 text-sm font-medium text-gray-700">Scan to Download</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
           {/* Contact Section */}
           <div 
             className="p-8 text-center border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl"
             data-aos="fade-up"
-            data-aos-delay="600"
+            data-aos-delay="700"
           >
             <h2 className="mb-4 text-3xl font-bold text-gray-800">Get Involved</h2>
             <p className="max-w-2xl mx-auto mb-6 text-xl text-gray-700">
@@ -224,7 +312,7 @@ const AboutPage = () => {
                 href="/complaint/submit"
                 className="bg-gradient-to-r from-[#8D153A] to-[#00534E] text-white px-8 py-4 rounded-xl font-bold hover:from-[#00534E] hover:to-[#8D153A] transition-all duration-500 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
                 data-aos="zoom-in"
-                data-aos-delay="700"
+                data-aos-delay="800"
               >
                 Submit Your First Complaint
               </a>
@@ -232,7 +320,7 @@ const AboutPage = () => {
                 href="/contact"
                 className="px-8 py-4 font-bold text-gray-800 transition-all duration-500 transform border shadow-lg bg-white/60 backdrop-blur-md rounded-xl border-white/60 hover:bg-white/80 hover:shadow-xl hover:-translate-y-1"
                 data-aos="zoom-in"
-                data-aos-delay="800"
+                data-aos-delay="900"
               >
                 Contact Our Team
               </a>
