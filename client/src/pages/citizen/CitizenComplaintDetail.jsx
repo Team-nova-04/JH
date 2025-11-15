@@ -34,6 +34,7 @@ const CitizenComplaintDetail = () => {
   const navigate = useNavigate();
   const [complaint, setComplaint] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [processingIdentity, setProcessingIdentity] = useState(false);
 
   useEffect(() => {
     fetchComplaint();
@@ -49,6 +50,34 @@ const CitizenComplaintDetail = () => {
       navigate('/citizen/dashboard');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // FR2: Handle identity approval
+  const handleApproveIdentity = async () => {
+    try {
+      setProcessingIdentity(true);
+      await complaintAPI.approveIdentity(id);
+      toast.success('Identity approved and revealed to authority');
+      fetchComplaint();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to approve identity');
+    } finally {
+      setProcessingIdentity(false);
+    }
+  };
+
+  // FR2: Handle identity decline
+  const handleDeclineIdentity = async () => {
+    try {
+      setProcessingIdentity(true);
+      await complaintAPI.declineIdentity(id);
+      toast.success('Identity request declined');
+      fetchComplaint();
+    } catch (error) {
+      toast.error(error.response?.data?.message || 'Failed to decline identity');
+    } finally {
+      setProcessingIdentity(false);
     }
   };
 
@@ -373,6 +402,44 @@ const CitizenComplaintDetail = () => {
                 )}
               </div>
             </div>
+
+            {/* FR2: Identity Request Card (for anonymous complaints) */}
+            {complaint.anonymous && complaint.identityRequested && !complaint.identityApproved && (
+              <div className="p-6 border shadow-xl bg-yellow-50/60 backdrop-blur-md border-yellow-300/60 rounded-3xl">
+                <h3 className="flex items-center mb-4 text-xl font-bold text-yellow-900">
+                  <Shield className="h-5 w-5 mr-2 text-yellow-700" />
+                  Identity Request
+                </h3>
+                <div className="space-y-4">
+                  <div className="p-4 bg-white/60 rounded-xl border border-yellow-200/60">
+                    <p className="mb-3 text-sm font-semibold text-yellow-900">
+                      An authority has requested to view your identity for this anonymous complaint.
+                    </p>
+                    <p className="text-xs text-yellow-800">
+                      You can choose to approve or decline this request. If approved, your name, email, and phone will be revealed to the authority for this complaint only.
+                    </p>
+                  </div>
+                  <div className="flex space-x-3">
+                    <button
+                      onClick={handleApproveIdentity}
+                      disabled={processingIdentity}
+                      className="flex-1 bg-green-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-green-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    >
+                      <CheckCircle2 className="h-4 w-4" />
+                      <span>{processingIdentity ? 'Processing...' : 'Approve'}</span>
+                    </button>
+                    <button
+                      onClick={handleDeclineIdentity}
+                      disabled={processingIdentity}
+                      className="flex-1 bg-red-600 text-white px-4 py-2 rounded-xl font-semibold hover:bg-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+                    >
+                      <AlertTriangle className="h-4 w-4" />
+                      <span>{processingIdentity ? 'Processing...' : 'Decline'}</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Status Overview Card */}
             <div className="p-6 border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl">

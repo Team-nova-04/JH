@@ -24,6 +24,9 @@ export const COMPLAINT_CATEGORIES = [
   'environmental issue',
 ];
 
+// FR2: Categories that require identification (cannot be anonymous)
+export const REQUIRES_IDENTIFICATION_CATEGORIES = ['water issue', 'electricity issue'];
+
 export const AUTHORITY_ROLES = {
   MUNICIPAL_COUNCIL: 'municipal_council',
   WATER_BOARD: 'water_board',

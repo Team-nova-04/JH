@@ -90,11 +90,14 @@ const CLASSIFICATION_LABELS = [
   "environmental issue",
 ];
 
-// Personal premises keywords (require login)
+// Personal premises keywords (require login) - FR2
 const PERSONAL_PREMISES_KEYWORDS = [
+  "my house",
+  "inside home",
+  "personal bathroom",
+  "inside my property",
   "bathroom",
   "inside house",
-  "my house",
   "my home",
   "inside my",
   "personal",

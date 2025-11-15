@@ -27,14 +27,21 @@ const {
  */
 const submitComplaint = async (req, res) => {
   try {
-    let { description, location, category } = req.body;
+    console.log("=== Complaint Submission Debug (FR2) ===");
+    console.log("Request body:", req.body);
+    console.log("Request file:", req.file ? req.file.filename : "No file");
+    console.log("User (citizen):", req.user ? req.user._id : "Anonymous");
+    
+    let { description, location, category, anonymous } = req.body;
     const imageUrl = req.file ? `/uploads/images/${req.file.filename}` : null;
     const citizen = req.user || null;
+    
+    // Parse anonymous flag (can be string "true"/"false" from FormData or boolean)
+    const isAnonymousRequested = anonymous === true || anonymous === "true" || anonymous === "1";
 
     // Ensure description is a string (not an object)
     if (typeof description !== "string") {
       if (description && typeof description === "object") {
-        // If it's an object, try to extract a string value or convert to string
         description = description.toString();
       } else {
         description = String(description || "");
@@ -53,12 +60,19 @@ const submitComplaint = async (req, res) => {
       });
     }
 
+    // ========== FR2 RULE A: Anonymous only allowed when logged in ==========
+    if (!citizen && isAnonymousRequested) {
+      return res.status(401).json({
+        success: false,
+        message: "Please log in to submit anonymously.",
+      });
+    }
+
     // Process NLP to get the category if not provided
     const nlpResults = await processNLP(description);
 
     // Check if AI failed to detect category
     if (nlpResults.error || !nlpResults.category) {
-      // If user provided category manually, use it
       if (category) {
         console.log("Using manually selected category:", category);
       } else {
@@ -74,24 +88,35 @@ const submitComplaint = async (req, res) => {
 
     const finalCategory = category || nlpResults.category;
 
-    // Check if the category requires identification and if the user is anonymous
-    if (
-      REQUIRES_IDENTIFICATION_CATEGORIES.includes(finalCategory) &&
-      !citizen
-    ) {
+    // ========== FR2 RULE B: Category requires identity (reject if not logged in) ==========
+    if (!citizen && REQUIRES_IDENTIFICATION_CATEGORIES.includes(finalCategory)) {
       return res.status(401).json({
         success: false,
-        message: `Contact information is required for complaints in the '${finalCategory}' category. Please log in to submit.`,
+        message: "Please log in to submit this category of complaint.",
       });
     }
 
-    // Check if personal premises mentioned (require login)
-    if (mentionsPersonalPremises(description) && !citizen) {
+    // ========== FR2 RULE C: Personal premises complaint from non-logged user ==========
+    if (!citizen && mentionsPersonalPremises(description)) {
       return res.status(401).json({
         success: false,
-        message: "Login required for personal premises complaints",
+        message: "Please log in to submit this category of complaint.",
       });
     }
+
+    // ========== FR2 RULE D: If user selects anonymous but category requires identity ==========
+    let finalIsAnonymous = isAnonymousRequested;
+    if (citizen && isAnonymousRequested && REQUIRES_IDENTIFICATION_CATEGORIES.includes(finalCategory)) {
+      // Force anonymous = false
+      finalIsAnonymous = false;
+      console.log("Rule D: Category requires identity, forcing anonymous = false");
+      // Note: We'll return a message to frontend, but still allow submission
+    }
+
+    // Determine final anonymous status
+    // If user is logged in: use their choice (or forced false if Rule D applies)
+    // If user is not logged in: automatically anonymous (but Rule A already prevents anonymous=true)
+    const isAnonymous = citizen ? finalIsAnonymous : false; // Non-logged users can't be anonymous per Rule A
 
     // Check if safety hazard requires location
     if (finalCategory === "safety hazard" && !location) {
@@ -100,9 +125,6 @@ const submitComplaint = async (req, res) => {
         message: "Location is required for safety hazard complaints",
       });
     }
-
-    // Determine if anonymous
-    const isAnonymous = !citizen;
 
     // Get urgency data for storing (hazardKeywordScore, trustScore)
     const urgencyData = processUrgency(description, isAnonymous);
@@ -176,12 +198,13 @@ const submitComplaint = async (req, res) => {
       : [];
 
     // Create complaint - ensure all string fields are properly formatted
+    // FR2: If anonymous, hide citizen info from authorities but store citizenId internally for identity requests
     const complaint = await Complaint.create({
-      citizenId: citizen ? citizen._id : null,
+      citizenId: citizen ? citizen._id : null, // Store citizenId even if anonymous (for identity requests)
       anonymous: isAnonymous,
-      name: citizen ? String(citizen.name || "").trim() : null,
-      phone: citizen ? String(citizen.phone || "").trim() : null,
-      email: citizen ? String(citizen.email || "").trim() : null,
+      name: isAnonymous ? null : (citizen ? String(citizen.name || "").trim() : null),
+      phone: isAnonymous ? null : (citizen ? String(citizen.phone || "").trim() : null),
+      email: isAnonymous ? null : (citizen ? String(citizen.email || "").trim() : null),
       description: String(description).trim(), // Ensure it's a string
       location: String(location).trim(), // Ensure it's a string
       imageUrl: imageUrl ? String(imageUrl).trim() : null,
@@ -201,9 +224,22 @@ const submitComplaint = async (req, res) => {
       notes: [],
     });
 
+    console.log("✅ Complaint created successfully:", {
+      id: complaint._id,
+      anonymous: isAnonymous,
+      category: complaint.category,
+      urgencyLevel: urgencyLevel,
+    });
+
+    // FR2 Rule D: If anonymous was disabled due to category requirement, inform frontend
+    const responseMessage = 
+      (citizen && isAnonymousRequested && !finalIsAnonymous && REQUIRES_IDENTIFICATION_CATEGORIES.includes(finalCategory))
+        ? "Category requires identification. Anonymous mode disabled."
+        : "Complaint submitted successfully";
+
     res.status(201).json({
       success: true,
-      message: "Complaint submitted successfully",
+      message: responseMessage,
       data: {
         complaint: {
           id: complaint._id,
@@ -214,28 +250,38 @@ const submitComplaint = async (req, res) => {
           assignedAuthority: complaint.assignedAuthority,
           status: complaint.status,
           submittedAt: complaint.submittedAt,
+          anonymous: complaint.anonymous,
         },
       },
     });
   } catch (error) {
-    console.error("Submit complaint error:", error);
-    res.status(500).json({
+    console.error("❌ Submit complaint error:", error);
+    console.error("Error stack:", error.stack);
+    
+    // Return more specific error messages
+    const statusCode = error.status || error.statusCode || 500;
+    const message = error.message || "Server error during complaint submission";
+    
+    res.status(statusCode).json({
       success: false,
-      message: "Server error during complaint submission",
-      error: error.message,
+      message: message,
+      ...(process.env.NODE_ENV === "development" && { 
+        error: error.message,
+        stack: error.stack 
+      }),
     });
   }
 };
 
 /**
- * Get citizen's own complaints
+ * Get citizen's own complaints (including anonymous ones)
  * GET /api/complaints/my-complaints
  */
 const getMyComplaints = async (req, res) => {
   try {
+    // FR2: Include both anonymous and non-anonymous complaints for the logged-in user
     const complaints = await Complaint.find({
       citizenId: req.user._id,
-      anonymous: false,
     })
       .sort({ submittedAt: -1 })
       .select("-notes");
@@ -299,8 +345,199 @@ const getComplaintById = async (req, res) => {
   }
 };
 
+/**
+ * Request identity for anonymous complaint (Authority only)
+ * POST /api/complaints/:id/request-identity
+ */
+const requestIdentity = async (req, res) => {
+  try {
+    const complaint = await Complaint.findById(req.params.id);
+
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: "Complaint not found",
+      });
+    }
+
+    // Check if complaint is anonymous
+    if (!complaint.anonymous) {
+      return res.status(400).json({
+        success: false,
+        message: "This complaint is not anonymous",
+      });
+    }
+
+    // Check if identity already requested
+    if (complaint.identityRequested) {
+      return res.status(400).json({
+        success: false,
+        message: "Identity already requested for this complaint",
+      });
+    }
+
+    // Check if identity already approved
+    if (complaint.identityApproved) {
+      return res.status(400).json({
+        success: false,
+        message: "Identity already approved for this complaint",
+      });
+    }
+
+    // Update complaint with identity request
+    complaint.identityRequested = true;
+    complaint.identityRequestedBy = req.user._id; // Authority user
+    complaint.identityRequestedAt = new Date();
+    await complaint.save();
+
+    res.json({
+      success: true,
+      message: "Identity request sent to citizen",
+      data: { complaint },
+    });
+  } catch (error) {
+    console.error("Request identity error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Approve identity request (Citizen only)
+ * POST /api/complaints/:id/approve-identity
+ */
+const approveIdentity = async (req, res) => {
+  try {
+    const complaint = await Complaint.findById(req.params.id).populate("citizenId");
+
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: "Complaint not found",
+      });
+    }
+
+    // Check if citizen owns this complaint
+    const citizenIdStr = complaint.citizenId ? complaint.citizenId.toString() : null;
+    if (!citizenIdStr || citizenIdStr !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    // Check if identity was requested
+    if (!complaint.identityRequested) {
+      return res.status(400).json({
+        success: false,
+        message: "No identity request found for this complaint",
+      });
+    }
+
+    // Check if already approved
+    if (complaint.identityApproved) {
+      return res.status(400).json({
+        success: false,
+        message: "Identity already approved",
+      });
+    }
+
+    // Get citizen details
+    const Citizen = require("../models/Citizen");
+    const citizen = await Citizen.findById(complaint.citizenId);
+
+    if (!citizen) {
+      return res.status(404).json({
+        success: false,
+        message: "Citizen not found",
+      });
+    }
+
+    // Approve and reveal identity
+    complaint.identityApproved = true;
+    complaint.revealedUser = {
+      name: citizen.name,
+      phone: citizen.phone,
+      email: citizen.email,
+    };
+    await complaint.save();
+
+    res.json({
+      success: true,
+      message: "Identity approved and revealed to authority",
+      data: { complaint },
+    });
+  } catch (error) {
+    console.error("Approve identity error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
+/**
+ * Decline identity request (Citizen only)
+ * POST /api/complaints/:id/decline-identity
+ */
+const declineIdentity = async (req, res) => {
+  try {
+    const complaint = await Complaint.findById(req.params.id);
+
+    if (!complaint) {
+      return res.status(404).json({
+        success: false,
+        message: "Complaint not found",
+      });
+    }
+
+    // Check if citizen owns this complaint
+    const citizenIdStr = complaint.citizenId ? complaint.citizenId.toString() : null;
+    if (!citizenIdStr || citizenIdStr !== req.user._id.toString()) {
+      return res.status(403).json({
+        success: false,
+        message: "Access denied",
+      });
+    }
+
+    // Check if identity was requested
+    if (!complaint.identityRequested) {
+      return res.status(400).json({
+        success: false,
+        message: "No identity request found for this complaint",
+      });
+    }
+
+    // Reset identity request
+    complaint.identityRequested = false;
+    complaint.identityRequestedBy = null;
+    complaint.identityRequestedAt = null;
+    await complaint.save();
+
+    res.json({
+      success: true,
+      message: "Identity request declined",
+      data: { complaint },
+    });
+  } catch (error) {
+    console.error("Decline identity error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message,
+    });
+  }
+};
+
 module.exports = {
   submitComplaint,
   getMyComplaints,
   getComplaintById,
+  requestIdentity,
+  approveIdentity,
+  declineIdentity,
 };

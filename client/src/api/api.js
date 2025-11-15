@@ -17,6 +17,10 @@ export const complaintAPI = {
   submit: (data, config) => axiosClient.post("/complaints", data, config),
   getMyComplaints: () => axiosClient.get("/complaints/my-complaints"),
   getById: (id) => axiosClient.get(`/complaints/${id}`),
+  // FR2: Identity request endpoints
+  requestIdentity: (id) => axiosClient.post(`/complaints/${id}/request-identity`),
+  approveIdentity: (id) => axiosClient.post(`/complaints/${id}/approve-identity`),
+  declineIdentity: (id) => axiosClient.post(`/complaints/${id}/decline-identity`),
 };
 
 // ============ Authority APIs ============

@@ -35,17 +35,32 @@ axiosClient.interceptors.response.use(
     return response;
   },
   (error) => {
+    // Only auto-logout on 401 if it's an authentication error (not a business logic error)
+    // Business logic 401s (like "login required for this category") should not log out the user
     if (error.response?.status === 401) {
-      // Unauthorized - clear token and redirect to login
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      localStorage.removeItem('userType');
+      const errorMessage = error.response?.data?.message || '';
       
-      // Only show toast if not already on login page
-      if (!window.location.pathname.includes('/login')) {
-        toast.error('Session expired. Please login again.');
-        window.location.href = '/';
+      // Check if it's an authentication error (token-related) vs business logic error
+      const isAuthError = 
+        errorMessage.includes('token') || 
+        errorMessage.includes('Token') ||
+        errorMessage.includes('Authorization denied') ||
+        errorMessage.includes('not valid') ||
+        errorMessage.includes('expired');
+      
+      // Only logout if it's a real authentication error, not a business logic requirement
+      if (isAuthError) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        localStorage.removeItem('userType');
+        
+        // Only show toast if not already on login page
+        if (!window.location.pathname.includes('/login')) {
+          toast.error('Session expired. Please login again.');
+          window.location.href = '/';
+        }
       }
+      // For business logic 401s, just show the error message without logging out
     }
     
     // Handle other errors
