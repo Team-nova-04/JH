@@ -50,7 +50,7 @@ const LandingPage = () => {
   ];
 
   return (
-    <div className="min-h-screen">
+    <div className="mt-[-50px] min-h-screen">
       {/* Hero Section with Sri Lankan Background */}
       <section className="relative flex items-center justify-center h-screen overflow-hidden">
         {/* Sri Lankan Background Image */}

@@ -12,11 +12,22 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import LogoutConfirmModal from "../components/LogoutConfirmModal";
 
 const DashboardLayout = ({ children }) => {
   const { userType, user, logout } = useAuth();
   const location = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
+
+  const handleLogout = () => {
+    setShowLogoutModal(true);
+  };
+
+  const confirmLogout = () => {
+    setShowLogoutModal(false);
+    logout();
+  };
 
   const getMenuItems = () => {
     if (userType === "authority") {
@@ -108,7 +119,7 @@ const DashboardLayout = ({ children }) => {
           {/* Logout */}
           <div className="px-4 py-4 border-t">
             <button
-              onClick={logout}
+              onClick={handleLogout}
               className="flex items-center space-x-3 px-4 py-3 w-full text-red-600 hover:bg-red-50 rounded-lg transition-colors"
             >
               <LogOut className="h-5 w-5" />
@@ -141,6 +152,14 @@ const DashboardLayout = ({ children }) => {
         {/* Page Content */}
         <main className="p-6">{children}</main>
       </div>
+
+      {/* Logout Confirmation Modal */}
+      <LogoutConfirmModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={confirmLogout}
+        userName={user?.name || user?.email}
+      />
     </div>
   );
 };
