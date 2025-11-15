@@ -10,14 +10,17 @@ import {
   BarChart3,
   Plus,
   Settings,
+  Shield,
+  Target,
+  MessageSquare
 } from "lucide-react";
-import AOS from "aos";
 
 const AdminCommunityDashboard = () => {
   const { communities, announcements, complaints } = useCommunity();
 
   useEffect(() => {
-    AOS.refresh();
+    // Scroll to top when component mounts
+    window.scrollTo(0, 0);
   }, []);
 
   // Calculate analytics
@@ -40,94 +43,137 @@ const AdminCommunityDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#FEF3C7] via-[#FDE68A] to-[#FCD34D] py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto space-y-8 max-w-7xl">
         {/* Header */}
-        <div className="mb-8" data-aos="fade-down">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                Community Management
-              </h1>
-              <p className="text-gray-600">
-                Manage communities, announcements, and monitor local issues
-              </p>
+        <div className="text-center">
+          <div className="flex justify-center mb-4">
+            <div className="relative">
+              <div className="absolute -inset-4 bg-gradient-to-r from-[#FDE68A] to-[#FCD34D] rounded-full blur-xl opacity-60"></div>
+              <div className="relative bg-gradient-to-br from-[#8D153A] to-[#00534E] p-4 rounded-3xl shadow-2xl">
+                <Shield className="w-16 h-16 text-white" />
+              </div>
+            </div>
+          </div>
+          <h1 className="text-5xl font-bold text-transparent bg-gradient-to-r from-[#8D153A] to-[#00534E] bg-clip-text mb-4">
+            Community Management
+          </h1>
+          <p className="max-w-3xl mx-auto text-2xl leading-relaxed text-gray-700">
+            Monitor and manage communities, announcements, and local issues across Sri Lanka
+          </p>
+        </div>
+
+        {/* Analytics Cards */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <div className="p-6 border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-gradient-to-br from-[#8D153A] to-[#A52D5A] p-3 rounded-2xl shadow-lg">
+                <Users className="w-6 h-6 text-white" />
+              </div>
+              <TrendingUp className="h-5 w-5 text-[#8D153A]" />
+            </div>
+            <h3 className="mb-2 text-3xl font-bold text-gray-900">
+              {totalMembers.toLocaleString()}
+            </h3>
+            <p className="text-sm font-semibold text-gray-600">Total Members</p>
+            <div className="w-full h-2 mt-3 rounded-full bg-white/60">
+              <div className="bg-gradient-to-r from-[#8D153A] to-[#A52D5A] h-2 rounded-full" style={{ width: '100%' }}></div>
+            </div>
+          </div>
+
+          <div className="p-6 border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-gradient-to-br from-[#00534E] to-[#008080] p-3 rounded-2xl shadow-lg">
+                <AlertCircle className="w-6 h-6 text-white" />
+              </div>
+              <TrendingUp className="h-5 w-5 text-[#00534E]" />
+            </div>
+            <h3 className="mb-2 text-3xl font-bold text-gray-900">
+              {totalIssues}
+            </h3>
+            <p className="text-sm font-semibold text-gray-600">Active Issues</p>
+            <div className="w-full h-2 mt-3 rounded-full bg-white/60">
+              <div className="bg-gradient-to-r from-[#00534E] to-[#008080] h-2 rounded-full" style={{ width: '100%' }}></div>
+            </div>
+          </div>
+
+          <div className="p-6 border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-gradient-to-br from-[#D97706] to-[#F59E0B] p-3 rounded-2xl shadow-lg">
+                <Bell className="w-6 h-6 text-white" />
+              </div>
+              <TrendingUp className="h-5 w-5 text-[#D97706]" />
+            </div>
+            <h3 className="mb-2 text-3xl font-bold text-gray-900">
+              {totalAnnouncements}
+            </h3>
+            <p className="text-sm font-semibold text-gray-600">Announcements</p>
+            <div className="w-full h-2 mt-3 rounded-full bg-white/60">
+              <div className="bg-gradient-to-r from-[#D97706] to-[#F59E0B] h-2 rounded-full" style={{ width: '100%' }}></div>
+            </div>
+          </div>
+
+          <div className="p-6 border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl">
+            <div className="flex items-center justify-between mb-4">
+              <div className="bg-gradient-to-br from-[#059669] to-[#10B981] p-3 rounded-2xl shadow-lg">
+                <TrendingUp className="w-6 h-6 text-white" />
+              </div>
+              <TrendingUp className="h-5 w-5 text-[#059669]" />
+            </div>
+            <h3 className="mb-2 text-3xl font-bold text-gray-900">
+              {totalUpvotes.toLocaleString()}
+            </h3>
+            <p className="text-sm font-semibold text-gray-600">Total Upvotes</p>
+            <div className="w-full h-2 mt-3 rounded-full bg-white/60">
+              <div className="bg-gradient-to-r from-[#059669] to-[#10B981] h-2 rounded-full" style={{ width: '100%' }}></div>
             </div>
           </div>
         </div>
 
-        {/* Analytics Cards */}
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-          data-aos="fade-up"
-        >
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-blue-100 rounded-lg">
-                <Users className="h-6 w-6 text-blue-600" />
+        {/* Platform Performance */}
+        <div className="bg-gradient-to-r from-[#8D153A] to-[#00534E] rounded-3xl shadow-2xl p-8 text-white">
+          <h2 className="mb-6 text-3xl font-bold text-center">Platform Performance</h2>
+          <div className="grid grid-cols-1 gap-6 text-center md:grid-cols-3">
+            <div>
+              <div className="text-4xl font-bold text-[#FFBE29] mb-2">
+                {communities.length}
               </div>
+              <p className="text-white/90">Active Communities</p>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">
-              {totalMembers.toLocaleString()}
-            </h3>
-            <p className="text-sm text-gray-600">Total Members</p>
-            <p className="text-xs text-green-600 mt-2">
-              ↑ Across all communities
-            </p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-orange-100 rounded-lg">
-                <AlertCircle className="h-6 w-6 text-orange-600" />
+            <div>
+              <div className="text-4xl font-bold text-[#FFBE29] mb-2">
+                {((totalIssues > 0 ? complaints.filter(c => c.status === 'resolved').length / totalIssues : 0) * 100).toFixed(1)}%
               </div>
+              <p className="text-white/90">Issue Resolution Rate</p>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">
-              {totalIssues}
-            </h3>
-            <p className="text-sm text-gray-600">Active Issues</p>
-            <p className="text-xs text-orange-600 mt-2">Requires attention</p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-purple-100 rounded-lg">
-                <Bell className="h-6 w-6 text-purple-600" />
+            <div>
+              <div className="text-4xl font-bold text-[#FFBE29] mb-2">
+                {totalMembers > 0 ? Math.round(totalUpvotes / totalMembers) : 0}
               </div>
+              <p className="text-white/90">Avg. Engagement per Member</p>
             </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">
-              {totalAnnouncements}
-            </h3>
-            <p className="text-sm text-gray-600">Announcements</p>
-            <p className="text-xs text-purple-600 mt-2">Published</p>
-          </div>
-
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-green-100 rounded-lg">
-                <TrendingUp className="h-6 w-6 text-green-600" />
-              </div>
-            </div>
-            <h3 className="text-2xl font-bold text-gray-900 mb-1">
-              {totalUpvotes.toLocaleString()}
-            </h3>
-            <p className="text-sm text-gray-600">Total Upvotes</p>
-            <p className="text-xs text-green-600 mt-2">Community engagement</p>
           </div>
         </div>
 
         {/* Communities List */}
-        <div data-aos="fade-up">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900">
-              Communities Overview
-            </h2>
-            <span className="text-sm text-gray-500">
-              {communities.length} total communities
-            </span>
+        <div>
+          <div className="flex flex-col mb-6 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h2 className="mb-2 text-3xl font-bold text-gray-800">
+                Communities Overview
+              </h2>
+              <p className="text-lg text-gray-700">
+                Manage and monitor all communities across the platform
+              </p>
+            </div>
+            <div className="px-4 py-2 mt-4 border sm:mt-0 bg-white/60 backdrop-blur-md rounded-xl border-white/60">
+              <span className="text-sm font-semibold text-gray-700">
+                {communities.length} total communities
+              </span>
+            </div>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {communities.map((community) => {
               const topIssues = getTopIssuesByCommunity(community.id);
               const announcementCount = getAnnouncementCount(community.id);
@@ -149,149 +195,167 @@ const AdminCommunityDashboard = () => {
               return (
                 <div
                   key={community.id}
-                  className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-all duration-300"
+                  className="overflow-hidden transition-all duration-300 border shadow-xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl hover:shadow-2xl"
                 >
                   {/* Header */}
-                  <div className="bg-gradient-to-r from-blue-500 to-purple-500 p-6">
-                    <div className="flex items-start justify-between">
+                  <div className="bg-gradient-to-r from-[#8D153A] to-[#00534E] p-8">
+                    <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
                       <div className="flex-1">
-                        <h3 className="text-2xl font-bold text-white mb-2">
-                          {community.name}
-                        </h3>
-                        <div className="flex items-center space-x-2 text-white/90 mb-3">
-                          <MapPin className="h-4 w-4" />
-                          <span className="text-sm">{community.location}</span>
+                        <div className="flex items-center mb-4 space-x-4">
+                          <div className="p-3 bg-white/20 rounded-2xl">
+                            <Target className="w-8 h-8 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="mb-2 text-3xl font-bold text-white">
+                              {community.name}
+                            </h3>
+                            <div className="flex items-center space-x-3 text-white/90">
+                              <MapPin className="w-5 h-5" />
+                              <span className="text-lg">{community.location}</span>
+                            </div>
+                          </div>
                         </div>
-                        <p className="text-white/80 text-sm max-w-2xl">
+                        <p className="max-w-3xl text-lg leading-relaxed text-white/80">
                           {community.description}
                         </p>
                       </div>
                       <Link
                         to={`/admin/communities/${community.id}/manage`}
-                        className="px-4 py-2 bg-white text-blue-600 rounded-lg font-semibold hover:bg-blue-50 transition-colors duration-200 flex items-center space-x-2"
+                        className="flex items-center px-6 py-3 space-x-2 font-bold text-white transition-all duration-300 border group bg-white/20 backdrop-blur-md rounded-xl hover:bg-white/30 border-white/40"
                       >
-                        <Settings className="h-4 w-4" />
-                        <span>Manage</span>
+                        <Settings className="w-5 h-5" />
+                        <span>Manage Community</span>
                       </Link>
                     </div>
                   </div>
 
                   {/* Stats Grid */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 p-6 bg-gray-50 border-b border-gray-200">
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <Users className="h-4 w-4 text-gray-500" />
-                        <span className="text-xs text-gray-600 font-medium">
+                  <div className="grid grid-cols-2 gap-6 p-8 border-b md:grid-cols-4 bg-white/40 border-white/60">
+                    <div className="p-4 text-center border bg-white/60 rounded-2xl border-white/60">
+                      <div className="flex items-center justify-center mb-2 space-x-2">
+                        <Users className="h-5 w-5 text-[#8D153A]" />
+                        <span className="text-sm font-semibold text-gray-600">
                           Members
                         </span>
                       </div>
-                      <p className="text-xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-gray-900">
                         {community.memberCount.toLocaleString()}
                       </p>
                     </div>
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <AlertCircle className="h-4 w-4 text-gray-500" />
-                        <span className="text-xs text-gray-600 font-medium">
+                    <div className="p-4 text-center border bg-white/60 rounded-2xl border-white/60">
+                      <div className="flex items-center justify-center mb-2 space-x-2">
+                        <AlertCircle className="h-5 w-5 text-[#00534E]" />
+                        <span className="text-sm font-semibold text-gray-600">
                           Active Issues
                         </span>
                       </div>
-                      <p className="text-xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-gray-900">
                         {community.activeIssues}
                       </p>
                     </div>
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <Bell className="h-4 w-4 text-gray-500" />
-                        <span className="text-xs text-gray-600 font-medium">
+                    <div className="p-4 text-center border bg-white/60 rounded-2xl border-white/60">
+                      <div className="flex items-center justify-center mb-2 space-x-2">
+                        <Bell className="h-5 w-5 text-[#D97706]" />
+                        <span className="text-sm font-semibold text-gray-600">
                           Announcements
                         </span>
                       </div>
-                      <p className="text-xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-gray-900">
                         {announcementCount}
                       </p>
                     </div>
-                    <div>
-                      <div className="flex items-center space-x-2 mb-1">
-                        <BarChart3 className="h-4 w-4 text-gray-500" />
-                        <span className="text-xs text-gray-600 font-medium">
+                    <div className="p-4 text-center border bg-white/60 rounded-2xl border-white/60">
+                      <div className="flex items-center justify-center mb-2 space-x-2">
+                        <BarChart3 className="h-5 w-5 text-[#059669]" />
+                        <span className="text-sm font-semibold text-gray-600">
                           Avg Urgency
                         </span>
                       </div>
-                      <p className="text-xl font-bold text-gray-900">
+                      <p className="text-2xl font-bold text-gray-900">
                         {avgUrgency}%
                       </p>
                     </div>
                   </div>
 
                   {/* Top Issues */}
-                  <div className="p-6">
-                    <h4 className="text-sm font-semibold text-gray-900 mb-4">
-                      Top Issues (by upvotes)
+                  <div className="p-8">
+                    <h4 className="flex items-center mb-6 text-xl font-bold text-gray-800">
+                      <MessageSquare className="h-6 w-6 mr-2 text-[#8D153A]" />
+                      Top Community Issues
                     </h4>
                     {topIssues.length > 0 ? (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
                         {topIssues.map((issue, idx) => (
                           <div
                             key={issue.id}
-                            className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                            className="flex items-center justify-between p-4 transition-all duration-300 border bg-white/40 rounded-2xl border-white/60 hover:bg-white/60"
                           >
                             <div className="flex-1">
-                              <div className="flex items-center space-x-2 mb-1">
-                                <span className="text-xs font-bold text-gray-500">
+                              <div className="flex items-center mb-2 space-x-3">
+                                <span className="text-sm font-bold text-[#8D153A] bg-[#8D153A]/10 px-3 py-1 rounded-full">
                                   #{idx + 1}
                                 </span>
                                 <span
-                                  className={`px-2 py-0.5 rounded text-xs font-semibold ${
+                                  className={`px-3 py-1 rounded-full text-xs font-semibold border ${
                                     issue.status === "resolved"
-                                      ? "bg-green-100 text-green-800"
+                                      ? "bg-green-100 text-green-800 border-green-200"
                                       : issue.status === "in-progress"
-                                      ? "bg-blue-100 text-blue-800"
-                                      : "bg-yellow-100 text-yellow-800"
+                                      ? "bg-blue-100 text-blue-800 border-blue-200"
+                                      : "bg-yellow-100 text-yellow-800 border-yellow-200"
                                   }`}
                                 >
                                   {issue.status.toUpperCase().replace("-", " ")}
                                 </span>
                               </div>
-                              <p className="text-sm font-medium text-gray-900 mb-1">
+                              <p className="mb-2 text-lg font-semibold text-gray-800">
                                 {issue.title}
                               </p>
-                              <div className="flex items-center space-x-3 text-xs text-gray-600">
-                                <span className="flex items-center space-x-1">
-                                  <MapPin className="h-3 w-3" />
+                              <div className="flex items-center space-x-4 text-sm text-gray-600">
+                                <span className="flex items-center space-x-2">
+                                  <MapPin className="w-4 h-4" />
                                   <span>{issue.location}</span>
                                 </span>
                                 <span>•</span>
-                                <span className="font-semibold text-blue-600">
+                                <span className="font-semibold text-[#00534E]">
                                   {issue.upvotes} upvotes
+                                </span>
+                                <span>•</span>
+                                <span>
+                                  {new Date(
+                                    issue.createdAt
+                                  ).toLocaleDateString()}
                                 </span>
                               </div>
                             </div>
-                            <div className="ml-4">
-                              <div className="text-center">
-                                <div
-                                  className={`text-lg font-bold ${
-                                    issue.urgencyScore >= 0.8
-                                      ? "text-red-600"
-                                      : issue.urgencyScore >= 0.6
-                                      ? "text-orange-600"
-                                      : "text-yellow-600"
-                                  }`}
-                                >
-                                  {(issue.urgencyScore * 100).toFixed(0)}%
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  urgency
-                                </div>
+                            <div className="ml-4 text-center">
+                              <div
+                                className={`text-2xl font-bold ${
+                                  issue.urgencyScore >= 0.8
+                                    ? "text-red-600"
+                                    : issue.urgencyScore >= 0.6
+                                    ? "text-orange-600"
+                                    : "text-yellow-600"
+                                }`}
+                              >
+                                {(issue.urgencyScore * 100).toFixed(0)}%
+                              </div>
+                              <div className="text-xs font-semibold text-gray-500">
+                                urgency
                               </div>
                             </div>
                           </div>
                         ))}
                       </div>
                     ) : (
-                      <p className="text-sm text-gray-500 italic">
-                        No issues reported yet
-                      </p>
+                      <div className="py-8 text-center border bg-white/40 rounded-2xl border-white/60">
+                        <Target className="w-12 h-12 mx-auto mb-3 text-gray-400" />
+                        <p className="font-semibold text-gray-700">
+                          No issues reported in this community yet
+                        </p>
+                        <p className="mt-1 text-sm text-gray-600">
+                          Community members are satisfied with their neighborhood
+                        </p>
+                      </div>
                     )}
                   </div>
                 </div>
