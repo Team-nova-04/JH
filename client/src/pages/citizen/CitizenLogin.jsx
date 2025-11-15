@@ -1,21 +1,21 @@
-import { useState, useEffect } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { loginSchema } from '../../utils/validations';
-import { useAuth } from '../../context/AuthContext';
-import { Shield, Mail, Lock } from 'lucide-react';
-import toast from 'react-hot-toast';
-import AOS from 'aos';
-import 'aos/dist/aos.css';
+import { useState, useEffect } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { loginSchema } from "../../utils/validations";
+import { useAuth } from "../../context/AuthContext";
+import { Shield, Mail, Lock } from "lucide-react";
+import toast from "react-hot-toast";
+import AOS from "aos";
+import "aos/dist/aos.css";
 
 const CitizenLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { citizenLogin } = useAuth();
   const [loading, setLoading] = useState(false);
-  
-  const from = location.state?.from || '/citizen/dashboard';
+
+  const from = location.state?.from || "/citizen/dashboard";
 
   useEffect(() => {
     AOS.init({
@@ -42,7 +42,7 @@ const CitizenLogin = () => {
       // Redirect back to where user came from, or dashboard
       navigate(from, { replace: true });
     } else {
-      toast.error(result.error || 'Login failed');
+      toast.error(result.error || "Login failed");
     }
   };
 
@@ -60,9 +60,9 @@ const CitizenLogin = () => {
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
               background: `radial-gradient(circle, ${
-                i % 2 === 0 ? '#FEF3C7' : '#FDE68A'
-              }${i % 3 === 0 ? '40' : '30'}, transparent)`,
-              filter: 'blur(40px)',
+                i % 2 === 0 ? "#FEF3C7" : "#FDE68A"
+              }${i % 3 === 0 ? "40" : "30"}, transparent)`,
+              filter: "blur(40px)",
               animationDelay: `${Math.random() * 5}s`,
             }}
           />
@@ -89,7 +89,7 @@ const CitizenLogin = () => {
         ))}
       </div>
 
-      <div 
+      <div
         className="relative z-10 w-full max-w-md p-8 space-y-8 border shadow-xl bg-white/20 backdrop-blur-md rounded-3xl border-white/30"
         data-aos="fade-up"
         data-aos-delay="200"
@@ -116,7 +116,10 @@ const CitizenLogin = () => {
           <div className="space-y-5">
             {/* Email Input */}
             <div data-aos="fade-right" data-aos-delay="400">
-              <label htmlFor="email" className="block mb-2 text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="email"
+                className="block mb-2 text-sm font-semibold text-gray-700"
+              >
                 Email Address
               </label>
               <div className="relative group">
@@ -124,23 +127,28 @@ const CitizenLogin = () => {
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#8D153A]" />
                   <input
-                    {...register('email')}
+                    {...register("email")}
                     type="email"
                     className={`w-full pl-12 pr-4 py-3 bg-white/60 border-2 rounded-xl focus:ring-2 focus:ring-[#FCD34D] focus:border-transparent text-gray-800 placeholder-gray-600 backdrop-blur-sm transition-all duration-300 ${
-                      errors.email ? 'border-red-400' : 'border-white/40'
+                      errors.email ? "border-red-400" : "border-white/40"
                     }`}
                     placeholder="you@example.com"
                   />
                 </div>
               </div>
               {errors.email && (
-                <p className="mt-2 text-sm font-medium text-red-600">{errors.email.message}</p>
+                <p className="mt-2 text-sm font-medium text-red-600">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             {/* Password Input */}
             <div data-aos="fade-left" data-aos-delay="500">
-              <label htmlFor="password" className="block mb-2 text-sm font-semibold text-gray-700">
+              <label
+                htmlFor="password"
+                className="block mb-2 text-sm font-semibold text-gray-700"
+              >
                 Password
               </label>
               <div className="relative group">
@@ -148,17 +156,19 @@ const CitizenLogin = () => {
                 <div className="relative">
                   <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 h-5 w-5 text-[#8D153A]" />
                   <input
-                    {...register('password')}
+                    {...register("password")}
                     type="password"
                     className={`w-full pl-12 pr-4 py-3 bg-white/60 border-2 rounded-xl focus:ring-2 focus:ring-[#FCD34D] focus:border-transparent text-gray-800 placeholder-gray-600 backdrop-blur-sm transition-all duration-300 ${
-                      errors.password ? 'border-red-400' : 'border-white/40'
+                      errors.password ? "border-red-400" : "border-white/40"
                     }`}
                     placeholder="••••••••"
                   />
                 </div>
               </div>
               {errors.password && (
-                <p className="mt-2 text-sm font-medium text-red-600">{errors.password.message}</p>
+                <p className="mt-2 text-sm font-medium text-red-600">
+                  {errors.password.message}
+                </p>
               )}
             </div>
           </div>
@@ -178,7 +188,7 @@ const CitizenLogin = () => {
                     <span>Signing in...</span>
                   </div>
                 ) : (
-                  'Sign In'
+                  "Sign In"
                 )}
               </span>
             </button>
@@ -186,9 +196,11 @@ const CitizenLogin = () => {
 
           {/* Register Link */}
           <div className="text-center" data-aos="fade-up" data-aos-delay="700">
-            <span className="text-sm text-gray-700">Don't have an account? </span>
-            <Link 
-              to="/citizen/register" 
+            <span className="text-sm text-gray-700">
+              Don't have an account?{" "}
+            </span>
+            <Link
+              to="/citizen/register"
               className="text-[#8D153A] hover:text-[#00534E] font-semibold transition-colors duration-300 hover:underline"
             >
               Register here

@@ -41,23 +41,28 @@ const CommunityFeedPage = () => {
   useEffect(() => {
     if (!isAuthenticated) {
       toast.error("Please login to access community feeds");
-      navigate("/citizen/login", { state: { from: `/community/${id}/feed`, message: "Please login to access community feeds" } });
+      navigate("/citizen/login", {
+        state: {
+          from: `/community/${id}/feed`,
+          message: "Please login to access community feeds",
+        },
+      });
       return;
     }
-    
+
     if (!isCitizen) {
       toast.error("Only citizens can access community feeds");
       navigate("/communities");
       return;
     }
-    
+
     // Redirect if not joined
     if (!hasJoined(id)) {
       toast("Please join the community first", {
-        icon: 'ℹ️',
+        icon: "ℹ️",
         style: {
-          background: '#3B82F6',
-          color: '#fff',
+          background: "#3B82F6",
+          color: "#fff",
         },
       });
       navigate("/communities");

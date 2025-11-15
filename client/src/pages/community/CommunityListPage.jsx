@@ -49,15 +49,17 @@ const CommunityListPage = () => {
                         Login Required to Join Communities
                       </h3>
                       <p className="text-green-50 text-lg">
-                        Sign in to your citizen account to join communities, participate in discussions, and stay updated with local announcements.
+                        Sign in to your citizen account to join communities,
+                        participate in discussions, and stay updated with local
+                        announcements.
                       </p>
                     </div>
                   </div>
                   <Link
                     to="/citizen/login"
-                    state={{ 
-                      from: '/communities', 
-                      message: 'Please login to join communities' 
+                    state={{
+                      from: "/communities",
+                      message: "Please login to join communities",
                     }}
                     className="flex items-center gap-2 px-8 py-4 bg-white text-green-700 rounded-xl font-bold hover:bg-green-50 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 whitespace-nowrap"
                   >

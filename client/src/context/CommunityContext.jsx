@@ -19,7 +19,7 @@ export const useCommunity = () => {
 
 export const CommunityProvider = ({ children }) => {
   const { isAuthenticated, isCitizen, userType } = useAuth();
-  
+
   // Load initial state from localStorage
   const [joinedCommunities, setJoinedCommunities] = useState(() => {
     const saved = localStorage.getItem("joinedCommunities");
@@ -45,17 +45,17 @@ export const CommunityProvider = ({ children }) => {
       toast.error("Please login to join communities");
       return false;
     }
-    
+
     // Check if user is a citizen
     if (!isCitizen) {
       toast.error("Only citizens can join communities");
       return false;
     }
-    
+
     if (!joinedCommunities.includes(communityId)) {
       setJoinedCommunities([...joinedCommunities, communityId]);
-      const community = communities.find(c => c.id === communityId);
-      toast.success(`Successfully joined ${community?.name || 'community'}!`);
+      const community = communities.find((c) => c.id === communityId);
+      toast.success(`Successfully joined ${community?.name || "community"}!`);
       return true;
     }
     return false;
@@ -64,8 +64,8 @@ export const CommunityProvider = ({ children }) => {
   // Leave a community
   const leaveCommunity = (communityId) => {
     setJoinedCommunities(joinedCommunities.filter((id) => id !== communityId));
-    const community = communities.find(c => c.id === communityId);
-    toast.success(`Left ${community?.name || 'community'}`);
+    const community = communities.find((c) => c.id === communityId);
+    toast.success(`Left ${community?.name || "community"}`);
   };
 
   // Check if user has joined a community
