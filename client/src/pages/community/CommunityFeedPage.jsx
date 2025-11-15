@@ -12,6 +12,8 @@ import {
   ArrowLeft,
   MapPin,
   TrendingUp,
+  Shield,
+  Heart,
 } from "lucide-react";
 import AOS from "aos";
 import toast from "react-hot-toast";
@@ -71,18 +73,18 @@ const CommunityFeedPage = () => {
 
   if (!community) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-[#FEF3C7] via-[#FDE68A] to-[#FCD34D] flex items-center justify-center">
         <div className="text-center">
-          <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <AlertCircle className="w-16 h-16 mx-auto mb-4 text-gray-400" />
+          <h2 className="mb-2 text-2xl font-bold text-gray-900">
             Community Not Found
           </h2>
-          <p className="text-gray-600 mb-6">
+          <p className="mb-6 text-gray-600">
             The community you're looking for doesn't exist.
           </p>
           <Link
             to="/communities"
-            className="px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-200"
+            className="px-6 py-3 bg-gradient-to-r from-[#8D153A] to-[#00534E] text-white rounded-xl font-semibold hover:from-[#00534E] hover:to-[#8D153A] transition-all duration-500 shadow-lg hover:shadow-xl"
           >
             Back to Communities
           </Link>
@@ -102,37 +104,37 @@ const CommunityFeedPage = () => {
     {
       id: "announcements",
       label: "Announcements",
-      icon: <Bell className="h-4 w-4" />,
+      icon: <Bell className="w-4 h-4" />,
       count: announcements.length,
     },
     {
       id: "issues",
       label: "Local Issues",
-      icon: <AlertCircle className="h-4 w-4" />,
+      icon: <AlertCircle className="w-4 h-4" />,
       count: complaints.length,
     },
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-[#FEF3C7] via-[#FDE68A] to-[#FCD34D] py-8 px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl">
         {/* Header Section */}
         <div className="mb-8">
           <button
             onClick={() => navigate("/communities")}
-            className="flex items-center space-x-2 text-gray-600 hover:text-gray-900 mb-6 group"
+            className="flex items-center mb-6 space-x-2 text-gray-600 hover:text-gray-900 group"
           >
-            <ArrowLeft className="h-5 w-5 group-hover:-translate-x-1 transition-transform duration-200" />
+            <ArrowLeft className="w-5 h-5 transition-transform duration-200 group-hover:-translate-x-1" />
             <span className="font-medium">Back to Communities</span>
           </button>
 
           {/* Community Header Card */}
           <div
-            className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden"
+            className="overflow-hidden border shadow-2xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl"
             data-aos="fade-down"
           >
             {/* Banner */}
-            <div className="h-32 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 relative">
+            <div className="h-32 bg-gradient-to-r from-[#8D153A] via-[#00534E] to-[#D97706] relative">
               <div className="absolute inset-0 bg-black opacity-20"></div>
             </div>
 
@@ -140,30 +142,42 @@ const CommunityFeedPage = () => {
             <div className="px-8 py-6">
               <div className="flex items-start justify-between">
                 <div className="flex-1">
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">
-                    {community.name}
-                  </h1>
-                  <div className="flex items-center space-x-2 text-gray-600 mb-4">
-                    <MapPin className="h-4 w-4" />
-                    <span>{community.location}</span>
+                  <div className="flex items-center mb-4 space-x-4">
+                    <div className="bg-gradient-to-br from-[#8D153A] to-[#00534E] p-3 rounded-2xl shadow-lg">
+                      <Shield className="w-8 h-8 text-white" />
+                    </div>
+                    <div>
+                      <h1 className="text-4xl font-bold text-transparent bg-gradient-to-r from-[#8D153A] to-[#00534E] bg-clip-text mb-2">
+                        {community.name}
+                      </h1>
+                      <div className="flex items-center space-x-2 text-gray-600">
+                        <MapPin className="w-4 h-4" />
+                        <span className="text-lg font-medium">{community.location}</span>
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-gray-700 mb-6">{community.description}</p>
+                  
+                  <p className="mb-6 text-lg leading-relaxed text-gray-700">{community.description}</p>
 
                   {/* Stats */}
-                  <div className="flex items-center space-x-6">
-                    <div className="flex items-center space-x-2">
-                      <Users className="h-5 w-5 text-blue-600" />
-                      <span className="font-semibold text-gray-900">
-                        {community.memberCount.toLocaleString()}
-                      </span>
-                      <span className="text-gray-600">members</span>
+                  <div className="flex items-center space-x-8">
+                    <div className="flex items-center px-4 py-2 space-x-3 border bg-white/40 backdrop-blur-sm rounded-2xl border-white/60">
+                      <Users className="h-6 w-6 text-[#8D153A]" />
+                      <div>
+                        <span className="text-lg font-bold text-gray-900">
+                          {community.memberCount.toLocaleString()}
+                        </span>
+                        <span className="ml-2 text-gray-600">members</span>
+                      </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                      <TrendingUp className="h-5 w-5 text-orange-600" />
-                      <span className="font-semibold text-gray-900">
-                        {community.activeIssues}
-                      </span>
-                      <span className="text-gray-600">active issues</span>
+                    <div className="flex items-center px-4 py-2 space-x-3 border bg-white/40 backdrop-blur-sm rounded-2xl border-white/60">
+                      <TrendingUp className="h-6 w-6 text-[#00534E]" />
+                      <div>
+                        <span className="text-lg font-bold text-gray-900">
+                          {community.activeIssues}
+                        </span>
+                        <span className="ml-2 text-gray-600">active issues</span>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -171,7 +185,7 @@ const CommunityFeedPage = () => {
                 {/* Leave Button */}
                 <button
                   onClick={handleLeaveCommunity}
-                  className="px-6 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 transition-colors duration-200 border border-gray-300"
+                  className="px-6 py-3 font-semibold text-red-600 transition-all duration-300 border bg-white/40 backdrop-blur-md rounded-xl hover:bg-red-50/50 border-white/60 hover:border-red-200/50 hover:shadow-lg"
                 >
                   Leave Community
                 </button>
@@ -181,7 +195,7 @@ const CommunityFeedPage = () => {
         </div>
 
         {/* Tab Navigation */}
-        <div className="mb-8 flex justify-center" data-aos="fade-up">
+        <div className="flex justify-center mb-8" data-aos="fade-up">
           <TabSwitch
             tabs={tabs}
             activeTab={activeTab}
@@ -209,14 +223,16 @@ const CommunityFeedPage = () => {
                 </div>
               ) : (
                 <div
-                  className="text-center py-16 bg-white rounded-xl shadow-sm"
+                  className="py-16 text-center border shadow-2xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl"
                   data-aos="fade-up"
                 >
-                  <Bell className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <div className="bg-gradient-to-br from-[#8D153A] to-[#00534E] p-4 rounded-2xl w-20 h-20 mx-auto mb-4 shadow-lg">
+                    <Bell className="w-12 h-12 text-white" />
+                  </div>
+                  <h3 className="mb-3 text-2xl font-bold text-gray-900">
                     No Announcements Yet
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-lg text-gray-600">
                     Stay tuned for important updates from your community.
                   </p>
                 </div>
@@ -230,19 +246,21 @@ const CommunityFeedPage = () => {
               {complaints.length > 0 ? (
                 <>
                   <div
-                    className="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6"
+                    className="bg-[#00534E]/10 border border-[#00534E]/20 rounded-2xl p-6 mb-6"
                     data-aos="fade-up"
                   >
-                    <div className="flex items-start space-x-3">
-                      <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex items-start space-x-4">
+                      <div className="bg-gradient-to-br from-[#00534E] to-[#008080] p-3 rounded-2xl">
+                        <Heart className="w-6 h-6 text-white" />
+                      </div>
                       <div>
-                        <h3 className="font-semibold text-blue-900 mb-1">
+                        <h3 className="font-bold text-lg text-[#00534E] mb-2">
                           Help Prioritize Community Issues
                         </h3>
-                        <p className="text-sm text-blue-700">
+                        <p className="leading-relaxed text-gray-700">
                           Upvote issues that matter most to you. Higher upvotes
                           increase the urgency score and help authorities
-                          prioritize resolutions.
+                          prioritize resolutions for your community's benefit.
                         </p>
                       </div>
                     </div>
@@ -261,14 +279,16 @@ const CommunityFeedPage = () => {
                 </>
               ) : (
                 <div
-                  className="text-center py-16 bg-white rounded-xl shadow-sm"
+                  className="py-16 text-center border shadow-2xl bg-white/60 backdrop-blur-md border-white/40 rounded-3xl"
                   data-aos="fade-up"
                 >
-                  <AlertCircle className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  <div className="bg-gradient-to-br from-[#00534E] to-[#008080] p-4 rounded-2xl w-20 h-20 mx-auto mb-4 shadow-lg">
+                    <AlertCircle className="w-12 h-12 text-white" />
+                  </div>
+                  <h3 className="mb-3 text-2xl font-bold text-gray-900">
                     No Issues Reported
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-lg text-gray-600">
                     Great news! There are currently no reported issues in this
                     community.
                   </p>
