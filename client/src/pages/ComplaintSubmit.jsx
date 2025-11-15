@@ -17,6 +17,8 @@ import {
   MessageSquare,
   User,
   Phone,
+  Shield,
+  Navigation,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import AOS from "aos";
@@ -28,6 +30,7 @@ const ComplaintSubmit = () => {
   const [loading, setLoading] = useState(false);
   const [imagePreview, setImagePreview] = useState(null);
   const [imageFile, setImageFile] = useState(null);
+  const [gettingLocation, setGettingLocation] = useState(false);
 
   useEffect(() => {
     AOS.init({
@@ -78,6 +81,20 @@ const ComplaintSubmit = () => {
       };
       reader.readAsDataURL(file);
     }
+  };
+
+  // Handle current location button click
+  const handleUseCurrentLocation = () => {
+    setGettingLocation(true);
+    
+    // Simulate location detection (UI only - no actual geolocation)
+    setTimeout(() => {
+      setGettingLocation(false);
+      toast.success("Location detected! Please verify the address below.");
+      
+      // Set a sample location (in a real app, this would be the actual address from geolocation)
+      setValue("location", "Colombo, Western Province, Sri Lanka");
+    }, 1500);
   };
 
   const onSubmit = async (data) => {
@@ -163,7 +180,7 @@ const ComplaintSubmit = () => {
             {/* Anonymous Toggle - FR2 */}
             {!isAuthenticated ? (
               <div
-                className="p-4 border bg-yellow-50 rounded-xl border-yellow-200"
+                className="p-4 border border-yellow-200 bg-yellow-50 rounded-xl"
                 data-aos="fade-right"
                 data-aos-delay="200"
               >
@@ -174,29 +191,41 @@ const ComplaintSubmit = () => {
               </div>
             ) : (
               <div
-                className="p-4 space-y-3 border bg-white/50 rounded-xl border-white/60"
+                className="p-6 space-y-4 border bg-white/50 rounded-2xl border-white/60"
                 data-aos="fade-right"
                 data-aos-delay="200"
               >
-                <div className="flex items-center space-x-3">
-                  <input
-                    {...register("anonymous")}
-                    type="checkbox"
-                    id="anonymous"
-                    disabled={anonymousDisabled}
-                    className="h-5 w-5 text-[#8D153A] focus:ring-[#8D153A] border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
-                  />
-                  <label
-                    htmlFor="anonymous"
-                    className={`text-sm font-medium ${
-                      anonymousDisabled ? "text-gray-400" : "text-gray-700"
-                    }`}
-                  >
-                    Submit anonymously
-                  </label>
+                <div className="flex items-start space-x-4">
+                  <div className="flex items-center h-5 mt-0.5">
+                    <input
+                      {...register("anonymous")}
+                      type="checkbox"
+                      id="anonymous"
+                      disabled={anonymousDisabled}
+                      className="h-5 w-5 text-[#8D153A] focus:ring-[#8D153A] border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                    />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex items-center space-x-3">
+                      <Shield className="w-5 h-5 text-[#8D153A]" />
+                      <label
+                        htmlFor="anonymous"
+                        className={`text-lg font-semibold ${
+                          anonymousDisabled ? "text-gray-400" : "text-gray-800"
+                        }`}
+                      >
+                        Submit Anonymously
+                      </label>
+                    </div>
+                    <p className="mt-2 text-sm leading-relaxed text-gray-600">
+                      When you submit anonymously, your personal information is not shared with authorities. 
+                      If follow-up is required, authorities will contact you through our secure platform 
+                      to request additional information while maintaining your privacy.
+                    </p>
+                  </div>
                 </div>
                 {categoryRequiresIdentity && (
-                  <div className="ml-8 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <div className="p-4 border border-red-200 rounded-lg ml-9 bg-red-50">
                     <p className="text-sm font-medium text-red-800">
                       <AlertCircle className="inline w-4 h-4 mr-2" />
                       This category requires identification. Anonymous mode
@@ -223,7 +252,7 @@ const ComplaintSubmit = () => {
                     {...register("name")}
                     type="text"
                     className="w-full px-4 py-3 bg-white/70 border border-white/60 rounded-xl focus:ring-2 focus:ring-[#8D153A] focus:border-transparent transition-all duration-300"
-                    placeholder="John Doe"
+                    placeholder="Suchithra Perera"
                   />
                 </div>
                 <div>
@@ -235,7 +264,7 @@ const ComplaintSubmit = () => {
                     {...register("phone")}
                     type="tel"
                     className="w-full px-4 py-3 bg-white/70 border border-white/60 rounded-xl focus:ring-2 focus:ring-[#8D153A] focus:border-transparent transition-all duration-300"
-                    placeholder="+1234567890"
+                    placeholder="+94 12 3456789"
                   />
                 </div>
               </div>
@@ -243,10 +272,30 @@ const ComplaintSubmit = () => {
 
             {/* Location */}
             <div data-aos="fade-up" data-aos-delay="400">
-              <label className="flex items-center block mb-3 text-sm font-semibold text-gray-700">
-                <MapPin className="w-4 h-4 mr-2 text-[#8D153A]" />
-                Location <span className="ml-1 text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between mb-3">
+                <label className="flex items-center text-sm font-semibold text-gray-700">
+                  <MapPin className="w-4 h-4 mr-2 text-[#8D153A]" />
+                  Location <span className="ml-1 text-red-500">*</span>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleUseCurrentLocation}
+                  disabled={gettingLocation}
+                  className="flex items-center space-x-2 px-4 py-2 text-sm font-medium text-[#00534E] bg-white/60 border border-[#00534E]/20 rounded-xl hover:bg-[#00534E] hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {gettingLocation ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-[#00534E] border-t-transparent rounded-full animate-spin"></div>
+                      <span>Detecting...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Navigation className="w-4 h-4" />
+                      <span>Use Current Location</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <input
                 {...register("location")}
                 type="text"
@@ -260,6 +309,9 @@ const ComplaintSubmit = () => {
                   {errors.location.message}
                 </p>
               )}
+              <p className="mt-2 text-xs font-medium text-gray-600">
+                Please provide accurate location details for faster resolution
+              </p>
             </div>
 
             {/* Category */}
